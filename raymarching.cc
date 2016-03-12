@@ -68,6 +68,7 @@ void rayMarch(const RenderParams &render_params, const vec3 &from, const vec3  &
       vec3 normPos;
       //const vec3 normPos = p - direction * epsModified;
       VEC(normPos, p.x - (direction.x * epsModified), p.y - (direction.y * epsModified), p.z - (direction.z * epsModified));
+      normal(normPos, pix_data.normal);
     }
   else 
     //we have the background colour
