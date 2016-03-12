@@ -78,4 +78,3 @@ double MandelBoxDE(const vec3 &p0, const MandelBoxParams &params, double c1, dou
   return  (Mag - c1) / dfactor - c2;
 }
 
-
