@@ -35,7 +35,7 @@ void lighting(const vec3 &n, const vec3 &color, const vec3 &pos, const vec3 &dir
 	vec3 CamLight, nn;
 	VEC(CamLight, 1.0, 1.0, 1.0);	
   VEC(nn, (n.x - 1.0), (n.y - 1.0), (n.z - 1.0));
-  double dotResult = (nn.x*direction.x) + (nn.y*direction.y + (nn.z*direction.z);
+  double dotResult = (nn.x*direction.x) + (nn.y*direction.y) + (nn.z*direction.z);
   double ambient = max( CamLightMin, dotResult )*CamLightW;
   //  outV = CamLight*ambient*color; Camlight= 1 anyways...
   VEC(outV, ambient*color.x, ambient*color.y, ambient*color.z);
