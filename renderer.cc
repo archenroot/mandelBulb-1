@@ -32,18 +32,18 @@ extern void   printProgress( double perc, double time );
 extern void rayMarch (const RenderParams &render_params, const vec3 &from, const vec3  &to, double eps, pixelData &pix_data);
 extern vec3 getColour(const pixelData &pixData, const RenderParams &render_params,
 		      const vec3 &from, const vec3  &direction);
+
 void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, 
 		   unsigned char* image)
 {
+
+  
   const double eps = pow(10.0, renderer_params.detail); 
   double farPoint[3];
   vec3 to, from;
   
-  //from.SetDoublePoint(camera_params.camPos);
-  //printf("Camera Position 1:%d ...2:%d ...3:%d\n", camera_params.camPos[0],camera_params.camPos[1],camera_params.camPos[2]);
-  //VEC(from, 14, 8, 10);
-  VEC(from, camera_params.camPos[0], camera_params.camPos[1], camera_params.camPos[2]);
-
+  SET_POINT(from,camera_params.camPos);
+  
   const int height = renderer_params.height;
   const int width  = renderer_params.width;
   
@@ -63,10 +63,9 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
 	  UnProject(i, j, camera_params, farPoint);
 	  
 	  // to = farPoint - camera_params.camPos
-	  //to = SubtractDoubleDouble(farPoint,camera_params.camPos);
-	  SUBTRACT_POINT(to, farPoint, camera_params.camPos);
-	  //to.Normalize();
+	  SUBTRACT_POINT(to,farPoint,camera_params.camPos);
 	  NORMALIZE(to);
+	  
 	  //render the pixel
 	  rayMarch(renderer_params, from, to, eps, pix_data);
 	  
@@ -81,8 +80,5 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
 	}
       printProgress((j+1)/(double)height,getTime()-time);
     }
-  //vec3 hi;
-  //VEC(hi, 1.0, 1.1, 1.23);
-  //printf("Hi.x:%f , Hi.y:%f , Hi.z %f\n", hi.x, hi.y, hi.z);
   printf("\n rendering done:\n");
 }
