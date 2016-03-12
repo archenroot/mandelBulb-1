@@ -43,9 +43,9 @@ void rayMarch(const RenderParams &render_params, const vec3 &from, const vec3  &
   vec3 p;
   do 
     {      
-			p.x = p.x+from.x+direction.x*totalDist;
-		  p.y = p.y+from.y+direction.y*totalDist;
-		  p.z = p.z+from.z+direction.z*totalDist;
+			p.x = from.x+direction.x*totalDist;
+		  p.y = from.y+direction.y*totalDist;
+		  p.z = from.z+direction.z*totalDist;
       dist = DE(p);
       
       totalDist += .95*dist;
@@ -65,10 +65,9 @@ void rayMarch(const RenderParams &render_params, const vec3 &from, const vec3  &
       pix_data.hit = p;
       
       //figure out the normal of the surface at this point
-      //figure out the normal of the surface at this point
-      //vec3 normPos;
+      vec3 normPos;
       //const vec3 normPos = p - direction * epsModified;
-      //VEC(normPos, p.x - (direction.x * epsModified), p.y - (direction.y * epsModified), p.z - (direction.z * epsModified));
+      VEC(normPos, p.x - (direction.x * epsModified), p.y - (direction.y * epsModified), p.z - (direction.z * epsModified));
     }
   else 
     //we have the background colour
