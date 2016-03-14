@@ -25,12 +25,12 @@
 #include "color.h"
 #include "renderer.h"
 #include "vec3d.h"
+#include "mandelbox.h"
 
-extern double DE(const vec3 &p);
-void normal (const vec3 & p, vec3 & normal);
+double DE(const vec3 &p, MandelBoxParams mandelBox_params);
+void normal(const vec3 & p, vec3 & normal, MandelBoxParams mandelBox_params);
 
-void rayMarch(const RenderParams &render_params, const vec3 &from, const vec3  &direction, double eps,
-	      pixelData& pix_data)
+void rayMarch(const RenderParams &render_params, const vec3 &from, const vec3  &direction, double eps, pixelData& pix_data, MandelBoxParams mandelBox_params)
 {
   double dist = 0.0;
   double totalDist = 0.0;
@@ -46,7 +46,7 @@ void rayMarch(const RenderParams &render_params, const vec3 &from, const vec3  &
 			p.x = from.x+direction.x*totalDist;
 		  p.y = from.y+direction.y*totalDist;
 		  p.z = from.z+direction.z*totalDist;
-      dist = DE(p);
+      dist = DE(p,mandelBox_params);
       
       totalDist += .95*dist;
       
@@ -68,7 +68,7 @@ void rayMarch(const RenderParams &render_params, const vec3 &from, const vec3  &
       vec3 normPos;
       //const vec3 normPos = p - direction * epsModified;
       VEC(normPos, p.x - (direction.x * epsModified), p.y - (direction.y * epsModified), p.z - (direction.z * epsModified));
-      normal(normPos, pix_data.normal);
+      normal(normPos, pix_data.normal, mandelBox_params);
     }
   else 
     //we have the background colour
@@ -76,7 +76,7 @@ void rayMarch(const RenderParams &render_params, const vec3 &from, const vec3  &
 }
 
 
-void normal(const vec3 & p, vec3 & normal)
+void normal(const vec3 & p, vec3 & normal, MandelBoxParams mandelBox_params)
 {
   // compute the normal at p
   const double sqrt_mach_eps = 1.4901e-08;
@@ -94,7 +94,7 @@ void normal(const vec3 & p, vec3 & normal)
   VEC(pm3, p.x - e3.x, p.y - e3.y, p.z - e3.z);
   VEC(pp3, p.x + e3.x, p.y + e3.y, p.z + e3.z);
   //normal = vec3(DE(p+e1)-DE(p-e1), DE(p+e2)-DE(p-e2), DE(p+e3)-DE(p-e3));
-  VEC(normal, DE(pp1)-DE(pm1), DE(pp2)-DE(pm2), DE(pp3)-DE(pm3));
+  VEC(normal, DE(pp1,mandelBox_params)-DE(pm1,mandelBox_params), DE(pp2,mandelBox_params)-DE(pm2,mandelBox_params), DE(pp3,mandelBox_params)-DE(pm3,mandelBox_params));
   //normal.Normalize();
   NORMALIZE(normal);
 }
