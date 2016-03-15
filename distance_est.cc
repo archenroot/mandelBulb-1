@@ -22,13 +22,13 @@
 #include "mandelbox.h"
 
 //extern MandelBoxParams mandelBox_params;
-extern double MandelBoxDE(const vec3 &pos, const MandelBoxParams &mPar, double c1, double c2);
-
+//extern double MandelBoxDE(const vec3 &pos, const MandelBoxParams &mPar, double c1, double c2);
+extern double MandelBulbDistanceEstimator(const vec3 &p0, const MandelBoxParams &params);
 //Distance Estimator Field Selector
 double DE(const vec3 &p, MandelBoxParams mandelBox_params)
 {
-  double c1 = fabs(mandelBox_params.scale - 1.0);
-  double c2 = pow( fabs(mandelBox_params.scale), 1 - mandelBox_params.num_iter);
-  double d = MandelBoxDE(p, mandelBox_params, c1, c2);
+  // double c1 = fabs(mandelBox_params.scale - 1.0);
+  // double c2 = pow( fabs(mandelBox_params.scale), 1 - mandelBox_params.num_iter);
+  double d = MandelBulbDistanceEstimator(p, mandelBox_params);
   return d;
 }
