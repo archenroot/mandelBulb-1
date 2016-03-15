@@ -40,6 +40,7 @@ void rayMarch(const RenderParams &render_params, const vec3 &from, const vec3  &
   
   int steps=0;
   vec3 p;
+  #pragma omp ordered
   do 
     {      
 			p.x = from.x+direction.x*totalDist;

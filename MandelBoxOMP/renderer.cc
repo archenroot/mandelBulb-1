@@ -19,6 +19,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <stdio.h>
+#include <omp.h>
 #include "color.h"
 #include "mandelbox.h"
 #include "camera.h"
@@ -47,13 +48,16 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
   
   pixelData pix_data;
   
-  double time = getTime();
+  //double time = getTime();
   vec3 color;
   
   int i,j,k;
+#pragma omp parallel default(shared) private(to, pix_data) shared(image, camera_params, renderer_params, from, farPoint)
+	#pragma omp for schedule (guided)	
   for(j = 0; j < height; j++)
     {
       //for each column pixel in the row
+      #pragma omp parallel for schedule (guided)
       for(i = 0; i <width; i++)
 	{
 	  // get point on the 'far' plane
@@ -76,7 +80,7 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
 	  image[k+1] = (unsigned char)(color.y * 255);
 	  image[k]   = (unsigned char)(color.z * 255);
 	}
-      printProgress((j+1)/(double)height,getTime()-time);
+      //printProgress((j+1)/(double)height,getTime()-time);
     }
   printf("\n rendering done:\n");
 }
