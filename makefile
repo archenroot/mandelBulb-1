@@ -1,6 +1,7 @@
 
-CC       =  g++
-FLAGS    = -O3 -Wall -fopenmp
+CC       =  pgcc
+CXX 	 =  pgCC
+FLAGS    = -O3 -acc -Minfo=accel -fast -ta=tesla,time -Msafeptr
 CFLAGS   = $(FLAGS)
 CXXFLAGS = $(FLAGS)
 LDFLAGS  = -lm 
