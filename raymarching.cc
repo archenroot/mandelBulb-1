@@ -25,11 +25,12 @@
 #include "renderer.h"
 #include "vec3d.h"
 #include "mandelbox.h"
+#include "openacc.h"
+
 
 double DE(const vec3 &p, MandelBoxParams mandelBox_params);
 void normal(const vec3 & p, vec3 & normal, MandelBoxParams mandelBox_params);
-
-void rayMarch(const RenderParams &render_params, const vec3 &from, const vec3  &direction, double eps, pixelData& pix_data, MandelBoxParams mandelBox_params)
+void rayMarch(const float maxDistance, const int maxRaySteps, const vec3 &from, const vec3  &direction, double eps, pixelData& pix_data, MandelBoxParams &mandelBox_params)
 {
   double dist = 0.0;
   double totalDist = 0.0;
@@ -53,7 +54,7 @@ void rayMarch(const RenderParams &render_params, const vec3 &from, const vec3  &
       epsModified*=eps;
       steps++;
     }
-  while (dist > epsModified && totalDist <= render_params.maxDistance && steps < render_params.maxRaySteps);
+  while (dist > epsModified && totalDist <= maxDistance && steps < maxRaySteps);
   
   if (dist < epsModified) 
     {
@@ -73,8 +74,6 @@ void rayMarch(const RenderParams &render_params, const vec3 &from, const vec3  &
     //we have the background colour
     pix_data.escaped = true;
 }
-
-
 void normal(const vec3 & p, vec3 & normal, MandelBoxParams mandelBox_params)
 {
   // compute the normal at p

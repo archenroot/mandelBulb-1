@@ -23,22 +23,23 @@
 #include <math.h>
 #include <string.h>
 #include "3d.h"
+#include "openacc.h"
 
 //---------------------------------------------------------------------------------------------
 //when projection and modelview matricies are static (computed only once, and camera does not mover)
-int UnProject(double winX, double winY, CameraParams camP, double *obj)
+int UnProject(double winX, double winY, double view[4], double matrix[16], double *obj)
 {
   //Transformation vectors
   double in[4], out[4];
   
   //Transformation of normalized coordinates between -1 and 1
-  in[0]=(winX-(double)(camP.viewport[0]))/(double)(camP.viewport[2])*2.0-1.0;
-  in[1]=(winY-(double)(camP.viewport[1]))/(double)(camP.viewport[3])*2.0-1.0;
+  in[0]=(winX-(view[0]))/(view[2])*2.0-1.0;
+  in[1]=(winY-(view[1]))/(view[3])*2.0-1.0;
   in[2]=2.0-1.0;
   in[3]=1.0;
   
   //Objects coordinates
-  MultiplyMatrixByVector(out, camP.matInvProjModel, in);
+  MultiplyMatrixByVector(out, matrix, in);
   
   if(out[3]==0.0)
     return 0;

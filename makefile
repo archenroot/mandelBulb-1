@@ -1,9 +1,9 @@
-
-CC       =  g++
-FLAGS    = -O3 -Wall -fopenmp
+CC       =  pgCC
+CXX	 = 	pgCC
+FLAGS    = -O3 -acc -Minfo=accel -fast -ta=tesla,time -Msafeptr -g
 CFLAGS   = $(FLAGS)
 CXXFLAGS = $(FLAGS)
-LDFLAGS  = -lm 
+LDFLAGS  = -lm
 
 PROGRAM_NAME=mandelbox
 

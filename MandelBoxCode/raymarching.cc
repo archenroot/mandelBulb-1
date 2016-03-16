@@ -24,10 +24,11 @@
 
 #include "color.h"
 #include "renderer.h"
-
+#pragma acc routine
 extern double DE(const vec3 &p);
+#pragma acc routine
 void normal (const vec3 & p, vec3 & normal);
-
+#pragma acc routine
 void rayMarch(const RenderParams &render_params, const vec3 &from, const vec3  &direction, double eps,
 	      pixelData& pix_data)
 {
