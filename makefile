@@ -1,10 +1,9 @@
-
-CC       =  pgcc
-CXX 	 =  pgCC
-FLAGS    = -O3 -acc -Minfo=accel -fast -ta=tesla,time -Msafeptr
+CC       =  pgCC
+CXX			 = 	pgCC
+FLAGS    = -acc -Minfo=accel -fast -ta=tesla,time -Msafeptr
 CFLAGS   = $(FLAGS)
 CXXFLAGS = $(FLAGS)
-LDFLAGS  = -lm 
+LDFLAGS  = -lm
 
 PROGRAM_NAME=mandelbox
 

@@ -25,7 +25,7 @@
 #include <algorithm>
 
 using namespace std;
-double clamp(double d, double min, double max); 
+double clamp(double d, double min, double max);
 
 
 void lighting(const vec3 &n, const vec3 &color, const vec3 &pos, const vec3 &direction,  vec3 &outV)
@@ -45,24 +45,24 @@ vec3 getColour(const pixelData &pixData, const RenderParams &render_params, cons
   VEC(backColor, 0.4, 0.4, 0.4);
   //colouring and lightning
   VEC(hitColor, 1.0, 1.0, 1.0);
-  
+
   if (pixData.escaped == false){
       //apply lighting
       lighting(pixData.normal, hitColor, pixData.hit, direction, hitColor);
       //add normal based colouring
       if(render_params.colourType == 0 || render_params.colourType == 1){
-      
+
 				/*hitColor = hitColor * pixData.normal;
 	  		hitColor = (hitColor + 1.0)/2.0;
 	  		hitColor = hitColor*render_params.brightness;*/
 	  		hitColor.x *= pixData.normal.x;
-	  		hitColor.y *= pixData.normal.y;  			  		
+	  		hitColor.y *= pixData.normal.y;
 	  		hitColor.z *= pixData.normal.z;
 	  		hitColor.x = (hitColor.x+1.0)/2.0;
 	  		hitColor.y = (hitColor.y+1.0)/2.0;
 	  		hitColor.z = (hitColor.z+1.0)/2.0;
 	  		hitColor.x *= render_params.brightness;
-	  		hitColor.y *= render_params.brightness;  			  		
+	  		hitColor.y *= render_params.brightness;
 	  		hitColor.z *= render_params.brightness;
 
 				//gamma correction
@@ -97,9 +97,6 @@ double clamp(double d, double min, double max) {
   }else{
   	t = d;
   }
-  
+
 	return t;
 }
-
-
-

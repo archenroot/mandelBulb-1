@@ -21,6 +21,7 @@
 #ifndef COLOR_H
 #define COLOR_H
 #include "vec3d.h"
+#include "renderer.h"
 
 typedef struct
 {
@@ -28,5 +29,8 @@ typedef struct
   vec3 hit;
   vec3 normal;
 } pixelData;
+
+#pragma acc routine seq
+vec3 getColour(const pixelData &pixData, const RenderParams &render_params, const vec3 &from, const vec3 &direction);
 
 #endif
