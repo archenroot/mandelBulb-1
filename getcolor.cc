@@ -21,17 +21,18 @@
 #include "color.h"
 #include "renderer.h"
 #include "vec3d.h"
+#include "openacc.h"
 #include <cmath>
 #include <algorithm>
 
 using namespace std;
+#pragma acc routine
 double clamp(double d, double min, double max); 
-
 
 void lighting(const vec3 &n, const vec3 &color, const vec3 &pos, const vec3 &direction,  vec3 &outV)
 {
-	static double CamLightW = 1.8;// 1.27536;
-	static double CamLightMin = 0.3;// 0.48193;
+	const double CamLightW = 1.8;// 1.27536;
+	const double CamLightMin = 0.3;// 0.48193;
 	vec3 nn;
   VEC(nn, (n.x - 1.0), (n.y - 1.0), (n.z - 1.0));
   double dotResult = (nn.x*direction.x) + (nn.y*direction.y) + (nn.z*direction.z);
@@ -39,31 +40,34 @@ void lighting(const vec3 &n, const vec3 &color, const vec3 &pos, const vec3 &dir
   //  outV = CamLight*ambient*color; Camlight= 1 anyways...
   VEC(outV, ambient*color.x, ambient*color.y, ambient*color.z);
 }
-
-vec3 getColour(const pixelData &pixData, const RenderParams &render_params, const vec3 &from, const vec3  &direction){
-	vec3 backColor, hitColor;
+#pragma acc routine
+void getColour(double* temp, bool &escaped, double hx, double hy, double hz, double nx, double ny, double nz, int colourType, float brightness, double tx, double ty, double tz){
+	vec3 backColor, hitColor, direction, hit, normal;
+	VEC(direction, tx, ty, tz);
+	VEC(hit, hx, hy, hz);
+	VEC(normal, nx, ny, nz);
   VEC(backColor, 0.4, 0.4, 0.4);
   //colouring and lightning
   VEC(hitColor, 1.0, 1.0, 1.0);
-  
-  if (pixData.escaped == false){
+
+  if (escaped == false){
       //apply lighting
-      lighting(pixData.normal, hitColor, pixData.hit, direction, hitColor);
+      lighting(normal, hitColor, hit, direction, hitColor);
       //add normal based colouring
-      if(render_params.colourType == 0 || render_params.colourType == 1){
+      if(colourType == 0 || colourType == 1){
       
 				/*hitColor = hitColor * pixData.normal;
 	  		hitColor = (hitColor + 1.0)/2.0;
 	  		hitColor = hitColor*render_params.brightness;*/
-	  		hitColor.x *= pixData.normal.x;
-	  		hitColor.y *= pixData.normal.y;  			  		
-	  		hitColor.z *= pixData.normal.z;
+	  		hitColor.x *= normal.x;
+	  		hitColor.y *= normal.y;  			  		
+	  		hitColor.z *= normal.z;
 	  		hitColor.x = (hitColor.x+1.0)/2.0;
 	  		hitColor.y = (hitColor.y+1.0)/2.0;
 	  		hitColor.z = (hitColor.z+1.0)/2.0;
-	  		hitColor.x *= render_params.brightness;
-	  		hitColor.y *= render_params.brightness;  			  		
-	  		hitColor.z *= render_params.brightness;
+	  		hitColor.x *= brightness;
+	  		hitColor.y *= brightness;  			  		
+	  		hitColor.z *= brightness;
 
 				//gamma correction
 				hitColor.x = clamp(hitColor.x, 0.0, 1.0);
@@ -72,7 +76,7 @@ vec3 getColour(const pixelData &pixData, const RenderParams &render_params, cons
 				VEC(hitColor, hitColor.x*hitColor.x, hitColor.y*hitColor.y, hitColor.z*hitColor.z);
 			}
 			double t;
-      if(render_params.colourType == 1){
+      if(colourType == 1){
 				//"swap" colors
 				t = hitColor.x;
 				hitColor.x = hitColor.z;
@@ -82,7 +86,10 @@ vec3 getColour(const pixelData &pixData, const RenderParams &render_params, cons
     //we have the background colour
     hitColor = backColor;
  }
-  return hitColor;
+
+ temp[0] = hitColor.x;
+ temp[1] = hitColor.y;
+ temp[2] = hitColor.z;
 }
 
 double clamp(double d, double min, double max) {

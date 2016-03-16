@@ -1,6 +1,6 @@
 CC       =  pgCC
 CXX	 = 	pgCC
-FLAGS    = -O3 -acc -Minfo=accel -fast -ta=tesla,time -Msafeptr
+FLAGS    = -O3 -acc -Minfo=accel -fast -ta=tesla,time -Msafeptr -g
 CFLAGS   = $(FLAGS)
 CXXFLAGS = $(FLAGS)
 LDFLAGS  = -lm
