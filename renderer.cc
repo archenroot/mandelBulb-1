@@ -45,37 +45,38 @@ void renderFractal(CameraParams camera_params, const RenderParams &renderer_para
   pixelData pix_data;
   double time = getTime();
   vec3 color;
-
+  printf("viewport pointer: %p\n", (void*)&(camera_params.viewport[0]));
   int i,j,k;
-	#pragma acc data  pcopy(camera_params) //pcopy(image[0:width*height])
+	#pragma acc data  pcopy(camera_params) pcopy(image[0:width*height*3])
+	#pragma acc host_data use_device(image)
 	#pragma acc kernels
-	#pragma acc loop
+	#pragma acc loop independent
   for(j = 0; j < height; j++)
     {
       //for each column pixel in the row
-			#pragma acc loop independent
+      #pragma acc loop independent
       for(i = 0; i <width; i++)
-				{
-				  // get point on the 'far' plane
-				  // since we render one frame only, we can use the more specialized method
-				  UnProject(i, j, &camera_params, farPoint);
+	{
+	  // get point on the 'far' plane
+	  // since we render one frame only, we can use the more specialized method
+	  UnProject(i, j, &camera_params, farPoint);
 
-				  // to = farPoint - camera_params.camPos
-				  SUBTRACT_POINT(to,farPoint,camera_params.camPos);
-				  NORMALIZE(to);
+	  // to = farPoint - camera_params.camPos
+	  SUBTRACT_POINT(to,farPoint,camera_params.camPos);
+	  NORMALIZE(to);
 
-				  //render the pixel
-				  //rayMarch(renderer_params, from, to, eps, pix_data, mandelBox_params);
+	  //render the pixel
+	  //rayMarch(renderer_params, from, to, eps, pix_data, mandelBox_params);
 
-				  //get the colour at this pixel
-				  //color = getColour(pix_data, renderer_params, from, to);
+	  //get the colour at this pixel
+	  //color = getColour(pix_data, renderer_params, from, to);
 
-				  //save colour into texture
-				  k = (j * width + i)*3;
-				  image[k+2] = (unsigned char)(color.x * 255);
-				  image[k+1] = (unsigned char)(color.y * 255);
-				  image[k]   = (unsigned char)(color.z * 255);
-				}
+	  //save colour into texture
+	  k = (j * width + i)*3;
+	  image[k+2] = (unsigned char)(color.x * 255);
+	  image[k+1] = (unsigned char)(color.y * 255);
+	  image[k]   = (unsigned char)(color.z * 255);
+	}
       //printProgress((j+1)/(double)height,getTime()-time);
     }
   printf("\n rendering done:\n");
