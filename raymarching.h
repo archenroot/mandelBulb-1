@@ -31,7 +31,7 @@
 #include "mandelbox.h"
 #include "distance_est.h"
 
-inline void normal(const vec3 & p, vec3 & normal, MandelBoxParams mandelBox_params)
+inline void normal(const vec3 & p, vec3 & normal, MandelBoxParams &mandelBox_params)
 {
   // compute the normal at p
   const double sqrt_mach_eps = 1.4901e-08;
@@ -55,7 +55,7 @@ inline void normal(const vec3 & p, vec3 & normal, MandelBoxParams mandelBox_para
   NORMALIZE(normal);
 }
 
-inline void rayMarch(const RenderParams &render_params, const vec3 &from, const vec3  &direction, double eps, pixelData& pix_data, MandelBoxParams mandelBox_params)
+inline void rayMarch(const RenderParams &render_params, const vec3 &from, const vec3  &direction, double eps, pixelData& pix_data, MandelBoxParams &mandelBox_params)
 {
   double dist = 0.0;
   double totalDist = 0.0;
