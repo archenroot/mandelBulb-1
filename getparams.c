@@ -24,8 +24,6 @@
 #include "renderer.h"
 #include "mandelbox.h"
 #include "camera.h"
-
-
 #define BUF_SIZE 1024
 
 

@@ -23,75 +23,61 @@
 #include "mandelbox.h"
 #include "camera.h"
 #include "vec3d.h"
-#include "3d.h"
-#include <string.h>
-
-#pragma acc routine
-extern void rayMarch(const float maxDistance, const int maxRaySteps, const vec3 &from, const vec3  &direction, double eps, pixelData& pix_data, MandelBoxParams mandelBox_params);
-#pragma acc routine
-extern void getColour(double* temp, bool &escaped, double hx, double hy, double hz, double nx, double ny, double nz, int colourType, float brightness, double tx, double ty, double tz);
-#pragma acc routine
-int UnProject(double winX, double winY, double view[4], double matrix[16], double *obj);
+//#include "3d.h"
+#include "3d2.h"
+#include "distance_est.h"
+#include "getcolor.h"
+#include "raymarching.h"
 
 void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image, MandelBoxParams mandelBox_params)
 {
-
-  
-  const double eps = pow(10.0, renderer_params.detail); 
+  double eps = pow(10.0f, renderer_params.detail); 
   double farPoint[3];
-  
-  /* Literals as required in the next 3 function calls*/
-  double view[4];
-  memcpy(view, camera_params.viewport, 4);
-  double Pos[3];
-  memcpy(view, camera_params.camPos, 3);
-  double matrixInvM[16]; 
-  memcpy(matrixInvM, camera_params.matInvProjModel, 16);
-  int maxSteps = renderer_params.maxRaySteps;
-  float maxDist = renderer_params.maxDistance;
-  int colorType = renderer_params.colourType;
-  float Brightness = renderer_params.brightness;
-	double * temp;
-  vec3 from;
-  SET_POINT(from,camera_params.camPos);
-  
-  const int height = renderer_params.height;
-  const int width  = renderer_params.width;
-  
-  pixelData pix_data;
-  
-  //double time = getTime();
-  vec3 color;
+ 
+  int height = renderer_params.height;
+  int width  = renderer_params.width;
+  int total = width*height;
   int i,j,k;
+  vec3 to[total];
+  vec3 from[total];
+  vec3 color[total];
+  pixelData pix_data[total];
 
-#pragma acc data copyin(from, view[0:3], matrixInvM[0:15], Pos[0:2], maxSteps, maxDist, colorType, Brightness, width, height, color, pix_data) copyout(image[0:3*width*height]) 
-#pragma acc kernels
-#pragma acc loop private(image[0:3*width*height])
-  for(j = 0; j < height; j++){       //for each column pixel in the row
-			#pragma acc loop private(image[0:3*width*height])
-      for(i = 0; i <width; i++){
-	  // get point on the 'far' plane
-	  // since we render one frame only, we can use the more specialized method
-	  UnProject(i, j, view, matrixInvM, farPoint);
-	  vec3 to, hit, normal;
-	  // to = farPoint - camera_params.camPos
-	  SUBTRACT_POINT(to,farPoint,Pos);
-	  NORMALIZE(to);
-	  VEC(hit, pix_data.hit.x, pix_data.hit.y, pix_data.hit.z)
-	  VEC(normal, pix_data.normal.x, pix_data.normal.y, pix_data.normal.z)
-		bool escape = pix_data.escaped;
-	  rayMarch(maxDist, maxSteps, from, to, eps, pix_data, mandelBox_params);
+  #pragma acc data copy(image[:width*height*3], farPoint[0:3], camera_params[0:1], renderer_params[0:1], to[0:total], color[0:total], from[0:total], pix_data[0:total]) 
+  #pragma acc parallel loop 
+  for(j = 0; j < height; j++){
+  #pragma acc loop 
+	for(i = 0; i <width; i++){
+	  SET_POINT(from[j*width+i],camera_params.camPos);
+		double in[4], out[4];
+		double result[3];
+		in[0]=(i-(double)(camera_params.viewport[0]))/(double)(camera_params.viewport[2])*2.0-1.0;
+		in[1]=(j-(double)(camera_params.viewport[1]))/(double)(camera_params.viewport[3])*2.0-1.0;
+		in[2]=2.0-1.0;
+		in[3]=1.0;
+		
+		out[0]=camera_params.matInvProjModel[0]*in[0]+camera_params.matInvProjModel[4]*in[1]+camera_params.matInvProjModel[8]*in[2]+camera_params.matInvProjModel[12]*in[3];
+  	out[1]=camera_params.matInvProjModel[1]*in[0]+camera_params.matInvProjModel[5]*in[1]+camera_params.matInvProjModel[9]*in[2]+camera_params.matInvProjModel[13]*in[3];
+  	out[2]=camera_params.matInvProjModel[2]*in[0]+camera_params.matInvProjModel[6]*in[1]+camera_params.matInvProjModel[10]*in[2]+camera_params.matInvProjModel[14]*in[3];
+  	out[3]=camera_params.matInvProjModel[3]*in[0]+camera_params.matInvProjModel[7]*in[1]+camera_params.matInvProjModel[11]*in[2]+camera_params.matInvProjModel[15]*in[3];
+  
+		out[3] = 1.0/out[3];
+		farPoint[0] = out[0]*out[3];
+		farPoint[1] = out[1]*out[3];
+		farPoint[2] = out[2]*out[3];
+
+	  SUBTRACT_POINT( to[j*width+i], farPoint,camera_params.camPos);
+	  NORMALIZE( to[j*width+i] );
+	
+	  rayMarch(renderer_params, from[j*width+i], to[j*width+i], eps, pix_data[j*width+i], mandelBox_params);
 	  
-	  //get the colour at this pixel
-	  getColour(temp, escape, hit.x, hit.y, hit.z, normal.x, normal.y, normal.z, colorType, Brightness, to.x , to.y, to.z);
-    VEC(color, temp[0], temp[1], temp[2]);
-	  //save colour into texture
+	  getColour(pix_data[j*width+i], renderer_params, from[j*width+i], to[j*width+i], result);
+    VEC(color[j*width+i], result[0], result[1], result[2]);
 	  k = (j * width + i)*3;
-	  image[k+2] = (unsigned char)(color.x * 255);
-	  image[k+1] = (unsigned char)(color.y * 255);
-	  image[k]   = (unsigned char)(color.z * 255);
+	  image[k+2] = (unsigned char)(color[j*width+i].x * 255);
+	  image[k+1] = (unsigned char)(color[j*width+i].y * 255);
+	  image[k]   = (unsigned char)(color[j*width+i].z * 255);
 	}
-      //printProgress((j+1)/(double)height,getTime()-time);
     }
   printf("\n rendering done:\n");
 }

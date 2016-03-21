@@ -22,6 +22,10 @@
 #include "camera.h"
 #include "renderer.h"
 #include "3d.h"
+#include "3d2.h"
+#include "distance_est.h"
+#include "getcolor.h"
+#include "raymarching.h"
 
 void init3D(CameraParams *camP, const RenderParams *renP)
 {
