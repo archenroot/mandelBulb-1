@@ -27,12 +27,11 @@
 #include <string.h>
 
 #pragma acc routine
-extern void rayMarch(const float maxDistance, const int maxRaySteps, const vec3 &from, const vec3  &direction, double eps, pixelData& pix_data, MandelBoxParams &mandelBox_params);
+extern void rayMarch(const float maxDistance, const int maxRaySteps, const vec3 &from, const vec3  &direction, double eps, pixelData& pix_data, MandelBoxParams mandelBox_params);
 #pragma acc routine
 extern void getColour(double* temp, bool &escaped, double hx, double hy, double hz, double nx, double ny, double nz, int colourType, float brightness, double tx, double ty, double tz);
 #pragma acc routine
-extern int UnProject(double winX, double winY, double view[4], double matrix[16], double *obj);
-
+int UnProject(double winX, double winY, double view[4], double matrix[16], double *obj);
 
 void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image, MandelBoxParams mandelBox_params)
 {

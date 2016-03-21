@@ -29,8 +29,8 @@
 
 
 double DE(const vec3 &p, MandelBoxParams mandelBox_params);
-void normal(const vec3 & p, vec3 & normal, MandelBoxParams mandelBox_params);
-void rayMarch(const float maxDistance, const int maxRaySteps, const vec3 &from, const vec3  &direction, double eps, pixelData& pix_data, MandelBoxParams &mandelBox_params)
+void normal(const vec3 & p, vec3 & normal, MandelBoxParams &mandelBox_params);
+void rayMarch(const float maxDistance, const int maxRaySteps, const vec3 &from, const vec3  &direction, double eps, pixelData& pix_data, MandelBoxParams mandelBox_params)
 {
   double dist = 0.0;
   double totalDist = 0.0;

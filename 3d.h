@@ -25,10 +25,11 @@
 
 #define NEAR 1
 #define FAR 100
-
+#include "vec3d.h"
+#include "color.h"
 #include "camera.h"
 #include "renderer.h"
-
+#include "mandelbox.h"
 
 void   LoadIdentity   (double *matrix);
 void   Perspective    (double fov, double aspect, double zNear, double zFar, double *projMatrix);
@@ -41,6 +42,16 @@ void   MultiplyMatrices(double *result, const double *matrix1, const double *mat
 void   MultiplyMatrixByVector(double *resultvector, double *matrix, double *pvector);
 int    InvertMatrix(double *m, double *out);
 void   Translate(double *result, double x, double y, double z);
-int 		UnProject(double winX, double winY, double view[4], double matrix[16], double *obj);
-
+int UnProject(double winX, double winY, double view[4], double matrix[16], double *obj);
+void rayMarch(const RenderParams &render_params, const vec3 &from, const vec3  &direction, double eps, pixelData& pix_data, MandelBoxParams mandelBox_params);
+vec3 getColour(const pixelData &pixData, const RenderParams &render_params, const vec3 &from, const vec3  &direction);
+/*int    UnProject(double winX, double winY, double winZ, const double *model, const double *proj, const int *view, double *obj);
+void rayMarch(const RenderParams &render_params, const vec3 &from, const vec3  &direction, double eps, pixelData& pix_data, MandelBoxParams mandelBox_params);
+vec3 getColour(const pixelData &pixData, const RenderParams &render_params, const vec3 &from, const vec3  &direction);*/
+double clamp(double d, double min, double max); 
+void lighting(const vec3 &n, const vec3 &color, const vec3 &pos, const vec3 &direction,  vec3 &outV);
+double DE(const vec3 &p, MandelBoxParams mandelBox_params);
+void normal(const vec3 & p, vec3 & normal, MandelBoxParams mandelBox_params);
+double MandelBoxDE(const vec3 &pos, const MandelBoxParams &mPar, double c1, double c2);
+double MandelBulbDistanceEstimator(const vec3 &p0, const MandelBoxParams params);
 #endif

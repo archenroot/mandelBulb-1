@@ -26,12 +26,10 @@
 #include "vec3d.h"
 #include "3d.h"
 
-extern double getTime();
-extern void   printProgress( double perc, double time );
-
+//extern double getTime();
+//extern void   printProgress( double perc, double time );
 extern void rayMarch(const RenderParams &render_params, const vec3 &from, const vec3  &direction, double eps, pixelData& pix_data, MandelBoxParams mandelBox_params);
-extern vec3 getColour(const pixelData &pixData, const RenderParams &render_params,
-		      const vec3 &from, const vec3  &direction);
+extern vec3 getColour(const pixelData &pixData, const RenderParams &render_params, const vec3 &from, const vec3  &direction);
 
 void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image, MandelBoxParams mandelBox_params)
 {
@@ -52,14 +50,9 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
   vec3 color;
   
   int i,j,k;
-#pragma omp parallel default(shared) private(to, pix_data) shared(image, camera_params, renderer_params, from, farPoint)
-	#pragma omp for schedule (guided)	
-  for(j = 0; j < height; j++)
-    {
-      //for each column pixel in the row
-      #pragma omp parallel for schedule (guided)
-      for(i = 0; i <width; i++)
-	{
+#pragma acc kernels
+  for(j = 0; j < height; j++){
+      for(i = 0; i <width; i++)	{
 	  // get point on the 'far' plane
 	  // since we render one frame only, we can use the more specialized method
 	  UnProject(i, j, camera_params, farPoint);

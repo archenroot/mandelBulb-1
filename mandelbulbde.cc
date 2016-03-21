@@ -27,7 +27,7 @@
 #endif
 
 
-double MandelBulbDistanceEstimator(const vec3 &p0, const MandelBoxParams &params)
+double MandelBulbDistanceEstimator(const vec3 &p0, const MandelBoxParams params)
 {
   vec3 z;
   z = p0;
