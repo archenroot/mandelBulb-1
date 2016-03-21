@@ -33,29 +33,25 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
 {
   double eps = pow(10.0f, renderer_params.detail); 
   double farPoint[3];
-  double result[3];
-  vec3 to, from;
-  vec3 color;
-  /*
-  vec3 to[width*height];
-  vec3 from[witdh*height];
-  vec3 color[width*height];
-  */
-  SET_POINT(from,camera_params.camPos);
-  
+ 
   int height = renderer_params.height;
   int width  = renderer_params.width;
-  
-  pixelData pix_data;
-
+  int total = width*height;
   int i,j,k;
-  #pragma acc data copy(image[:width*height*3], farPoint[0:3], camera_params[0:1], pix_data[0:1], result[0:3])
+  vec3 to[total];
+  vec3 from[total];
+  vec3 color[total];
+  pixelData pix_data[total];
+
+  #pragma acc data copy(image[:width*height*3], farPoint[0:3], camera_params[0:1], renderer_params[0:1], to[0:total], color[0:total], from[0:total], pix_data[0:total]) 
   #pragma acc parallel loop 
   for(j = 0; j < height; j++){
-      #pragma acc loop independent
+  //vec3 to;
+  #pragma acc loop 
 	for(i = 0; i <width; i++){
-	  //int hi = UnProject(i, j, camera_params, farPoint);
+	  SET_POINT(from[j*width+i],camera_params.camPos);
 		double in[4], out[4];
+		double result[3];
 		in[0]=(i-(double)(camera_params.viewport[0]))/(double)(camera_params.viewport[2])*2.0-1.0;
 		in[1]=(j-(double)(camera_params.viewport[1]))/(double)(camera_params.viewport[3])*2.0-1.0;
 		in[2]=2.0-1.0;
@@ -71,17 +67,17 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
 		farPoint[1] = out[1]*out[3];
 		farPoint[2] = out[2]*out[3];
 
-	  SUBTRACT_POINT(to,farPoint,camera_params.camPos);
-	  NORMALIZE(to);
+	  SUBTRACT_POINT( to[j*width+i], farPoint,camera_params.camPos);
+	  NORMALIZE( to[j*width+i] );
 	
-	  rayMarch(renderer_params, from, to, eps, pix_data, mandelBox_params);
+	  rayMarch(renderer_params, from[j*width+i], to[j*width+i], eps, pix_data[j*width+i], mandelBox_params);
 	  
-	  getColour(pix_data, renderer_params, from, to, result);
-    VEC(color, result[0], result[1], result[2]);
+	  getColour(pix_data[j*width+i], renderer_params, from[j*width+i], to[j*width+i], result);
+    VEC(color[j*width+i], result[0], result[1], result[2]);
 	  k = (j * width + i)*3;
-	  image[k+2] = (unsigned char)(color.x * 255);
-	  image[k+1] = (unsigned char)(color.y * 255);
-	  image[k]   = (unsigned char)(color.z * 255);
+	  image[k+2] = (unsigned char)(color[j*width+i].x * 255);
+	  image[k+1] = (unsigned char)(color[j*width+i].y * 255);
+	  image[k]   = (unsigned char)(color[j*width+i].z * 255);
 	}
     }
   printf("\n rendering done:\n");

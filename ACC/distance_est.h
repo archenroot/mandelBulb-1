@@ -66,10 +66,4 @@ inline double MandelBulbDistanceEstimator(const vec3 &p0, const MandelBoxParams 
 
   return (double)0.5*log(r)*r/dr;
 }
-//Distance Estimator Field Selector
-inline double DE(const vec3 &p, MandelBoxParams mandelBox_params)
-{
-  double d = MandelBulbDistanceEstimator(p, mandelBox_params);
-  return d;
-}
 #endif
