@@ -38,30 +38,63 @@ extern void   printProgress( double perc, double time );
 int main(int argc, char** argv)
 {
 	int i;
-	int frames = argv[2] || 1;
+	int spinFrames = 1;
+	int zoomFrames = 0;
+	if(argc == 3){
+		spinFrames = atoi(argv[2]);
+	} else if (argc == 4) {
+		spinFrames = atoi(argv[2]);
+		zoomFrames = atoi(argv[3]);
+	}
+
+
+
 	CameraParams    camera_params;
 	RenderParams    renderer_params;
 	MandelBoxParams mandelBox_params;
 	getParameters(argv[1], &camera_params, &renderer_params, &mandelBox_params);
 
-	double startX = camera_params.camPos[0];
-	double startZ = camera_params.camPos[2];
+
 
 	int image_size = renderer_params.width * renderer_params.height;
 	unsigned char *image = (unsigned char*)malloc(3*image_size*sizeof(unsigned char));
 	double time = getTime();
-	printf("Rendering %d frames\n", frames);
-	for (i=0; i<frames; i++) {
-		camera_params.camPos[0] = startX * cos(PI/frames * i);
-		camera_params.camPos[2] = startZ * sin(PI/frames * i);
+	printf("Rendering %d frames of zooming\n", zoomFrames);
+	double zoomStepX = (5. - camera_params.camPos[0]) / (double)zoomFrames;
+	double zoomStepZ = (5. - camera_params.camPos[2]) / (double)zoomFrames;
+	double evolutions = zoomFrames / 100.0;
+	mandelBox_params.rFixed -= evolutions * 0.1;
+	for (i=0; i<zoomFrames; i++) {
+		camera_params.camPos[0] = 5. - zoomStepX * i;
+		camera_params.camPos[2] = 5. - zoomStepZ * i;
+
 		init3D(&camera_params, &renderer_params);
 
 		renderFractal(camera_params, renderer_params, image, mandelBox_params);
 
 		char fileName[80];
-		sprintf(fileName, "./output/output_%04d.bmp", i);
+		sprintf(fileName, "./output/output_%05d.bmp", i);
 		saveBMP(fileName, image, renderer_params.width, renderer_params.height);
-		printProgress( (double)i/frames, getTime()-time );
+		mandelBox_params.rFixed += 0.1;
+		printProgress( (double)i/zoomFrames, getTime()-time );
+	}
+	printf("\n\n Zoomed to (%f,%f)", camera_params.camPos[0],camera_params.camPos[2]);
+
+	double startX = camera_params.camPos[0];
+	double startZ = camera_params.camPos[2];
+	double radPerFrame = PI/spinFrames;
+	printf("\n\nRendering %d frames of spinning\n", spinFrames);
+	for (i=0; i<spinFrames; i++) {
+		camera_params.camPos[0] = startX * cos(radPerFrame * i);
+		camera_params.camPos[2] = startX * sin(radPerFrame * i);
+		init3D(&camera_params, &renderer_params);
+
+		renderFractal(camera_params, renderer_params, image, mandelBox_params);
+
+		char fileName[80];
+		sprintf(fileName, "./output/output_%05d.bmp", i+zoomFrames);
+		saveBMP(fileName, image, renderer_params.width, renderer_params.height);
+		printProgress( (double)i/spinFrames, getTime()-time );
 		//printf("File %d saved\n",i);
 	}
 	printf("\n\nAll frames rendered\n");
