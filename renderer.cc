@@ -31,9 +31,9 @@
 
 void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image, MandelBoxParams &mandelBox_params)
 {
-  double eps = pow(10.0f, renderer_params.detail); 
+  double eps = pow(10.0f, renderer_params.detail);
   double farPoint[3];
- 
+
   int height = renderer_params.height;
   int width  = renderer_params.width;
   int total = width*height;
@@ -44,28 +44,25 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
   vec3 color[total];
   double in[4], out[4];
 	double result[3];
-/*
-#pragma acc enter data copyin(to[0:total], color[0:total], from[0:total])
-#pragma acc data copyin( farPoint[0:3], camera_params[0:1], renderer_params[0:1], mandelBox_params[0:1], image[:width*height*3])
-#pragma acc parallel loop private(image[:width*height*3], farPoint[0:3], in[0:4],out[0:4],result[0:3])*/
 
 #pragma acc data copy(image[:width*height*3], farPoint[0:3], camera_params[0:1], renderer_params[0:1], mandelBox_params[0:1], \
-to[0:total], color[0:total], from[0:total], result[0:3], in[0:4], out[0:4]) 
+to[0:total], color[0:total], from[0:total], result[0:3], in[0:4], out[0:4])
 #pragma acc parallel loop private(result[0:3], in[0:4], out[0:4], farPoint[0:3])
   for(j = 0; j < height; j++){
+    pixelData pix_data;
+    #pragma acc loop independent worker private(pix_data)
 	for(i = 0; i <width; i++){
 	  SET_POINT(from[j*width+i],camera_params.camPos);
-  	pixelData pix_data;
 		in[0]=(i-(double)(camera_params.viewport[0]))/(double)(camera_params.viewport[2])*2.0-1.0;
 		in[1]=(j-(double)(camera_params.viewport[1]))/(double)(camera_params.viewport[3])*2.0-1.0;
 		in[2]=2.0-1.0;
 		in[3]=1.0;
-		
+
 		out[0]=camera_params.matInvProjModel[0]*in[0]+camera_params.matInvProjModel[4]*in[1]+camera_params.matInvProjModel[8]*in[2]+camera_params.matInvProjModel[12]*in[3];
   	out[1]=camera_params.matInvProjModel[1]*in[0]+camera_params.matInvProjModel[5]*in[1]+camera_params.matInvProjModel[9]*in[2]+camera_params.matInvProjModel[13]*in[3];
   	out[2]=camera_params.matInvProjModel[2]*in[0]+camera_params.matInvProjModel[6]*in[1]+camera_params.matInvProjModel[10]*in[2]+camera_params.matInvProjModel[14]*in[3];
   	out[3]=camera_params.matInvProjModel[3]*in[0]+camera_params.matInvProjModel[7]*in[1]+camera_params.matInvProjModel[11]*in[2]+camera_params.matInvProjModel[15]*in[3];
-  
+
 		out[3] = 1.0/out[3];
 		farPoint[0] = out[0]*out[3];
 		farPoint[1] = out[1]*out[3];
@@ -73,9 +70,9 @@ to[0:total], color[0:total], from[0:total], result[0:3], in[0:4], out[0:4])
 
 	  SUBTRACT_POINT( to[j*width+i], farPoint,camera_params.camPos);
 	  NORMALIZE( to[j*width+i] );
-	
+
 	  rayMarch(renderer_params, from[j*width+i], to[j*width+i], eps, pix_data, mandelBox_params);
-	  
+
 	  getColour(pix_data, renderer_params, from[j*width+i], to[j*width+i], result);
     VEC(color[j*width+i], result[0], result[1], result[2]);
 	  k = (j * width + i)*3;
