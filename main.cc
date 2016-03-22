@@ -42,16 +42,18 @@ int main(int argc, char** argv)
 	CameraParams    camera_params;
 	RenderParams    renderer_params;
 	MandelBoxParams mandelBox_params;
-
 	getParameters(argv[1], &camera_params, &renderer_params, &mandelBox_params);
+
+	double startX = camera_params.camPos[0];
+	double startZ = camera_params.camPos[2];
 
 	int image_size = renderer_params.width * renderer_params.height;
 	unsigned char *image = (unsigned char*)malloc(3*image_size*sizeof(unsigned char));
 	double time = getTime();
 	printf("Rendering %d frames\n", frames);
 	for (i=0; i<frames; i++) {
-		camera_params.camPos[0] = 1.2 * cos(PI/frames * i);
-		camera_params.camPos[2] = 1.2 * sin(PI/frames * i);
+		camera_params.camPos[0] = startX * cos(PI/frames * i);
+		camera_params.camPos[2] = startZ * sin(PI/frames * i);
 		init3D(&camera_params, &renderer_params);
 
 		renderFractal(camera_params, renderer_params, image, mandelBox_params);
