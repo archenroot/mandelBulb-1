@@ -62,8 +62,10 @@ int main(int argc, char** argv)
 	printf("Rendering %d frames of zooming\n", zoomFrames);
 	double zoomStepX = (5. - camera_params.camPos[0]) / (double)zoomFrames;
 	double zoomStepZ = (5. - camera_params.camPos[2]) / (double)zoomFrames;
-	double evolutions = zoomFrames / 100.0;
-	mandelBox_params.rFixed -= evolutions * 0.1;
+	double evolutions = (double)zoomFrames / 50.0;
+	printf("power = %f\n", mandelBox_params.rFixed);
+	mandelBox_params.rFixed -= evolutions;
+	printf("power = %f\n", mandelBox_params.rFixed);
 	for (i=0; i<zoomFrames; i++) {
 		camera_params.camPos[0] = 5. - zoomStepX * i;
 		camera_params.camPos[2] = 5. - zoomStepZ * i;
@@ -75,9 +77,10 @@ int main(int argc, char** argv)
 		char fileName[80];
 		sprintf(fileName, "./output/output_%05d.bmp", i);
 		saveBMP(fileName, image, renderer_params.width, renderer_params.height);
-		mandelBox_params.rFixed += 0.1;
+		mandelBox_params.rFixed += 0.02;
 		printProgress( (double)i/zoomFrames, getTime()-time );
 	}
+	printf("power = %f\n", mandelBox_params.rFixed);
 	printf("\n\n Zoomed to (%f,%f)", camera_params.camPos[0],camera_params.camPos[2]);
 
 	double startX = camera_params.camPos[0];
