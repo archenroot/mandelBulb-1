@@ -32,7 +32,7 @@ inline void getColour(const pixelData &pixData, const RenderParams &render_param
   VEC(hitColor, 1.0, 1.0, 1.0);
   double CamLightW = 1.8;// 1.27536;
 	double CamLightMin = 0.3;// 0.48193;
-  
+
   if (pixData.escaped == false){
       //apply lighting
       //lighting(pixData.normal, hitColor, pixData.hit, direction, hitColor);
@@ -40,20 +40,20 @@ inline void getColour(const pixelData &pixData, const RenderParams &render_param
 			vec3 nn;
 			VEC(nn, (pixData.normal.x - 1.0), (pixData.normal.y - 1.0), (pixData.normal.z - 1.0));
 			double dotResult = (nn.x*direction.x) + (nn.y*direction.y) + (nn.z*direction.z);
-			double ambient = (CamLightMin >= dotResult) ? CamLightMin*CamLightW : dotResult*CamLightW ; 
+			double ambient = (CamLightMin >= dotResult) ? CamLightMin*CamLightW : dotResult*CamLightW ;
 			VEC(hitColor, ambient*hitColor.x, ambient*hitColor.y, ambient*hitColor.z);
-  
+
       //add normal based colouring
       if(render_params.colourType == 0 || render_params.colourType == 1){
-      
+
 	  		hitColor.x *= pixData.normal.x;
-	  		hitColor.y *= pixData.normal.y;  			  		
+	  		hitColor.y *= pixData.normal.y;
 	  		hitColor.z *= pixData.normal.z;
 	  		hitColor.x = (hitColor.x+1.0)/2.0;
 	  		hitColor.y = (hitColor.y+1.0)/2.0;
 	  		hitColor.z = (hitColor.z+1.0)/2.0;
 	  		hitColor.x *= render_params.brightness;
-	  		hitColor.y *= render_params.brightness;  			  		
+	  		hitColor.y *= render_params.brightness;
 	  		hitColor.z *= render_params.brightness;
 
 				//gamma correction
@@ -84,4 +84,3 @@ inline void getColour(const pixelData &pixData, const RenderParams &render_param
 }
 
 #endif
-

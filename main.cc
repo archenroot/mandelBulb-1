@@ -23,32 +23,44 @@
 #include "camera.h"
 #include "renderer.h"
 #include "mandelbox.h"
+#include <math.h>
 
 void getParameters(char *filename, CameraParams *camera_params, RenderParams *renderer_params,
 		   MandelBoxParams *mandelBox_paramsP);
 void init3D       (CameraParams *camera_params, const RenderParams *renderer_params);
 void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image, MandelBoxParams &mandelBox_params);
 void saveBMP      (const char* filename, const unsigned char* image, int width, int height);
+extern double getTime();
+extern void   printProgress( double perc, double time );
 
-//MandelBoxParams mandelBox_params;
+#define PI 3.14159265
 
 int main(int argc, char** argv)
 {
+	int i;
   CameraParams    camera_params;
   RenderParams    renderer_params;
   MandelBoxParams mandelBox_params;
-  
+
   getParameters(argv[1], &camera_params, &renderer_params, &mandelBox_params);
 
   int image_size = renderer_params.width * renderer_params.height;
   unsigned char *image = (unsigned char*)malloc(3*image_size*sizeof(unsigned char));
+	double time = getTime();
+	for (i=0; i<3600; i++) {
+		camera_params.camPos[0] = 1.2 * cos(PI/3600 * i);
+		camera_params.camPos[2] = 1.2 * sin(PI/3600 * i);
+	  init3D(&camera_params, &renderer_params);
 
-  init3D(&camera_params, &renderer_params);
+	  renderFractal(camera_params, renderer_params, image, mandelBox_params);
 
-  renderFractal(camera_params, renderer_params, image, mandelBox_params);
-  
-  saveBMP(renderer_params.file_name, image, renderer_params.width, renderer_params.height);
-  
+	  char fileName[80];
+		sprintf(fileName, "./output/output_%04d.bmp", i);
+	  saveBMP(fileName, image, renderer_params.width, renderer_params.height);
+		printProgress( (double)i/3600, getTime()-time );
+		//printf("File %d saved\n",i);
+	}
+
   free(image);
 
   return 0;

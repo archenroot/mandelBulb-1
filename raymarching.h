@@ -59,7 +59,7 @@ inline void rayMarch(const RenderParams &render_params, const vec3 &from, const 
 {
   double dist = 0.0;
   double totalDist = 0.0;
-
+  
   // We will adjust the minimum distance based on the current zoom
 
   double epsModified = 0.0;

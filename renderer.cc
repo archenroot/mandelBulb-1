@@ -81,5 +81,5 @@ to[0:total], color[0:total], from[0:total], result[0:3], in[0:4], out[0:4])
 	  image[k]   = (unsigned char)(color[j*width+i].z * 255);
 	}
     }
-  printf("\n rendering done:\n");
+  //printf("\n rendering done:\n");
 }
