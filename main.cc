@@ -28,7 +28,7 @@
 void getParameters(char *filename, CameraParams *camera_params, RenderParams *renderer_params,
 			MandelBoxParams *mandelBox_paramsP);
 void init3D       (CameraParams *camera_params, const RenderParams *renderer_params);
-void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image, MandelBoxParams &mandelBox_params);
+void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image, MandelBoxParams &mandelBox_params, double *returnTotalNorm);
 void saveBMP      (const char* filename, const unsigned char* image, int width, int height);
 extern double getTime();
 extern void   printProgress( double perc, double time );
@@ -54,7 +54,7 @@ int main(int argc, char** argv)
 	MandelBoxParams mandelBox_params;
 	getParameters(argv[1], &camera_params, &renderer_params, &mandelBox_params);
 
-
+	double total_pix_normal[3];
 
 	int image_size = renderer_params.width * renderer_params.height;
 	unsigned char *image = (unsigned char*)malloc(3*image_size*sizeof(unsigned char));
@@ -72,7 +72,7 @@ int main(int argc, char** argv)
 
 		init3D(&camera_params, &renderer_params);
 
-		renderFractal(camera_params, renderer_params, image, mandelBox_params);
+		renderFractal(camera_params, renderer_params, image, mandelBox_params, total_pix_normal);
 
 		char fileName[80];
 		sprintf(fileName, "./output/output_%05d.bmp", i);
@@ -92,7 +92,7 @@ int main(int argc, char** argv)
 		camera_params.camPos[2] = startX * sin(radPerFrame * i);
 		init3D(&camera_params, &renderer_params);
 
-		renderFractal(camera_params, renderer_params, image, mandelBox_params);
+		renderFractal(camera_params, renderer_params, image, mandelBox_params, total_pix_normal);
 
 		char fileName[80];
 		sprintf(fileName, "./output/output_%05d.bmp", i+zoomFrames);
@@ -101,7 +101,7 @@ int main(int argc, char** argv)
 		//printf("File %d saved\n",i);
 	}
 	printf("\n\nAll frames rendered\n");
-
+	printf("\nReduced.x: %f, Reduced.y: %f, Reduced.z: %f\n", total_pix_normal[0], total_pix_normal[1], total_pix_normal[2]);
 	free(image);
 
 	return 0;
