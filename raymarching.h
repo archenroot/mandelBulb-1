@@ -39,7 +39,7 @@ inline void normal(const vec3 & p, vec3 & normal, MandelBoxParams &mandelBox_par
   //double eps = std::max( Mag, 1.0 )*sqrt_mach_eps;
   double eps = (Mag > 1.0) ? Mag*sqrt_mach_eps : sqrt_mach_eps ;
   vec3 e1, e2, e3;
-  vec3 pp1, pm1, pp2, pm2, pp3, pm3; //Couldn't find the DE function
+  vec3 pp1, pm1, pp2, pm2, pp3, pm3; 
   VEC(e1, eps, 0,   0);
   VEC(e2, 0  , eps, 0);
   VEC(e3, 0  , 0, eps);

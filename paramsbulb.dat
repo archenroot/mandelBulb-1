@@ -1,6 +1,6 @@
 # CAMERA
 # location x,y,z (7,7,7)
-0.84 .26 -0.84 #.26
+0.25 .26 0.23 
 # look at x,y,z
 0 0 0
 # up vector x,y,z; (0, 1, 0)
@@ -9,7 +9,7 @@
 2.0
 # IMAGE
 # width height
-1080 1080
+1920 1080
 # detail level, the smaller the more detailed (-3.5)
 -3.0
 # MANDELBULB

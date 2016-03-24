@@ -23,13 +23,12 @@
 #include "mandelbox.h"
 #include "camera.h"
 #include "vec3d.h"
-//#include "3d.h"
 #include "3d2.h"
 #include "distance_est.h"
 #include "getcolor.h"
 #include "raymarching.h"
 
-void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image, MandelBoxParams &mandelBox_params)
+void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image, MandelBoxParams &mandelBox_params, double *returnTotalNorm)
 {
   double eps = pow(10.0f, renderer_params.detail);
   double farPoint[3];
@@ -44,14 +43,18 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
   vec3 color[total];
   double in[4], out[4];
 	double result[3];
-
+  pixelData pix_data;
+  double tx, ty, tz;
 #pragma acc data copy(image[:width*height*3], farPoint[0:3], camera_params[0:1], renderer_params[0:1], mandelBox_params[0:1], \
 to[0:total], color[0:total], from[0:total], result[0:3], in[0:4], out[0:4])
-#pragma acc parallel loop private(result[0:3], in[0:4], out[0:4], farPoint[0:3])
-  for(j = 0; j < height; j++){
-    pixelData pix_data;
-    #pragma acc loop independent worker private(pix_data)
+#pragma acc parallel loop private(result[0:3], in[0:4], out[0:4], farPoint[0:3]) reduction (max:tx) reduction(max:ty) reduction(max:tz)
+ for(j = 0; j < height; j++){
+  #pragma acc loop independent worker private(pix_data) 
+  //reduction (+:tx) reduction(+:ty) reduction(+:tz)
 	for(i = 0; i <width; i++){
+		/*This is a physical inline of UnProject
+		Problem: ACC did not allow certain values passed
+		*/
 	  SET_POINT(from[j*width+i],camera_params.camPos);
 		in[0]=(i-(double)(camera_params.viewport[0]))/(double)(camera_params.viewport[2])*2.0-1.0;
 		in[1]=(j-(double)(camera_params.viewport[1]))/(double)(camera_params.viewport[3])*2.0-1.0;
@@ -67,11 +70,24 @@ to[0:total], color[0:total], from[0:total], result[0:3], in[0:4], out[0:4])
 		farPoint[0] = out[0]*out[3];
 		farPoint[1] = out[1]*out[3];
 		farPoint[2] = out[2]*out[3];
-
+		/*End physical inline
+		*/
+		
 	  SUBTRACT_POINT( to[j*width+i], farPoint,camera_params.camPos);
 	  NORMALIZE( to[j*width+i] );
 
 	  rayMarch(renderer_params, from[j*width+i], to[j*width+i], eps, pix_data, mandelBox_params);
+	  
+		/*Calculating the distance between the surface and out camera angle
+		Done by looking at pix_data.normal
+		Purpose: Navigation through object
+		*/
+		tx = pix_data.normal.x;
+		ty = pix_data.normal.y;
+		tz = pix_data.normal.z;
+		
+		/*End custom code
+		*/
 
 	  getColour(pix_data, renderer_params, from[j*width+i], to[j*width+i], result);
     VEC(color[j*width+i], result[0], result[1], result[2]);
@@ -80,6 +96,9 @@ to[0:total], color[0:total], from[0:total], result[0:3], in[0:4], out[0:4])
 	  image[k+1] = (unsigned char)(color[j*width+i].y * 255);
 	  image[k]   = (unsigned char)(color[j*width+i].z * 255);
 	}
-    }
-  //printf("\n rendering done:\n");
+ }
+//Return values for navigation
+ returnTotalNorm[0] = tx;
+ returnTotalNorm[1] = ty;
+ returnTotalNorm[2] = tz;
 }
