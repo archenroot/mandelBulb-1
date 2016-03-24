@@ -55,7 +55,8 @@ int main(int argc, char** argv)
 	getParameters(argv[1], &camera_params, &renderer_params, &mandelBox_params);
 
 	double thetaOffset = atan(camera_params.camPos[2]/camera_params.camPos[0]);
-
+	double startX = camera_params.camPos[0];
+	double startZ = camera_params.camPos[2];
 
 	int image_size = renderer_params.width * renderer_params.height;
 	unsigned char *image = (unsigned char*)malloc(3*image_size*sizeof(unsigned char));
@@ -84,13 +85,12 @@ int main(int argc, char** argv)
 	printf("power = %f\n", mandelBox_params.rFixed);
 	printf("\n\n Zoomed to (%f,%f)", camera_params.camPos[0],camera_params.camPos[2]);
 
-	double startX = camera_params.camPos[0];
-	double startZ = camera_params.camPos[2];
+
 	double radPerFrame = PI/spinFrames;
 	printf("\n\nRendering %d frames of spinning\n", spinFrames);
 	for (i=0; i<spinFrames; i++) {
 		camera_params.camPos[0] = startX * cos(radPerFrame * i + thetaOffset);
-		camera_params.camPos[2] = startX * sin(radPerFrame * i + thetaOffset);
+		camera_params.camPos[2] = startZ * sin(radPerFrame * i + thetaOffset);
 		init3D(&camera_params, &renderer_params);
 
 		renderFractal(camera_params, renderer_params, image, mandelBox_params);
