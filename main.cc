@@ -54,6 +54,7 @@ int main(int argc, char** argv)
 	MandelBoxParams mandelBox_params;
 	getParameters(argv[1], &camera_params, &renderer_params, &mandelBox_params);
 
+	double thetaOffset = atan(camera_params.camPos[2]/camera_params.camPos[0]);
 
 
 	int image_size = renderer_params.width * renderer_params.height;
@@ -88,8 +89,8 @@ int main(int argc, char** argv)
 	double radPerFrame = PI/spinFrames;
 	printf("\n\nRendering %d frames of spinning\n", spinFrames);
 	for (i=0; i<spinFrames; i++) {
-		camera_params.camPos[0] = startX * cos(radPerFrame * i);
-		camera_params.camPos[2] = startX * sin(radPerFrame * i);
+		camera_params.camPos[0] = startX * cos(radPerFrame * i + thetaOffset);
+		camera_params.camPos[2] = startX * sin(radPerFrame * i + thetaOffset);
 		init3D(&camera_params, &renderer_params);
 
 		renderFractal(camera_params, renderer_params, image, mandelBox_params);
