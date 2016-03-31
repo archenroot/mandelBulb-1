@@ -39,7 +39,7 @@ inline void normal(const vec3 & p, vec3 & normal, MandelBoxParams &mandelBox_par
   //double eps = std::max( Mag, 1.0 )*sqrt_mach_eps;
   double eps = (Mag > 1.0) ? Mag*sqrt_mach_eps : sqrt_mach_eps ;
   vec3 e1, e2, e3;
-  vec3 pp1, pm1, pp2, pm2, pp3, pm3; 
+  vec3 pp1, pm1, pp2, pm2, pp3, pm3;
   VEC(e1, eps, 0,   0);
   VEC(e2, 0  , eps, 0);
   VEC(e3, 0  , 0, eps);
@@ -59,7 +59,7 @@ inline void rayMarch(const RenderParams &render_params, const vec3 &from, const 
 {
   double dist = 0.0;
   double totalDist = 0.0;
-  
+
   // We will adjust the minimum distance based on the current zoom
 
   double epsModified = 0.0;
@@ -94,6 +94,7 @@ inline void rayMarch(const RenderParams &render_params, const vec3 &from, const 
       //const vec3 normPos = p - direction * epsModified;
       VEC(normPos, p.x - (direction.x * epsModified), p.y - (direction.y * epsModified), p.z - (direction.z * epsModified));
       normal(normPos, pix_data.normal, mandelBox_params);
+      pix_data.distance = totalDist;
     }
   else
     //we have the background colour
