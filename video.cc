@@ -66,26 +66,36 @@ void autoMove(CameraParams &camera_params, RenderParams &renderer_params, Mandel
 	double time = getTime();
 	double condition = camera_params.camPos[primary];
 	int steps = 100;
+	int fileNumber = 0;
 	for (i=0;i<7600;i++) {
 
 
 		init3D(&camera_params, &renderer_params);
-			farPixel = renderFractal(camera_params, renderer_params, image, mandelBox_params);
-
-		if(i%10 == 0) {
-
-			camera_params.camTarget[0] = farPixel.hit.x;
-			camera_params.camTarget[1] = farPixel.hit.y;
-			camera_params.camTarget[2] = farPixel.hit.z;
-		}
+		farPixel = renderFractal(camera_params, renderer_params, image, mandelBox_params);
+		int j = 0;
+		// if (i%10 == 0) {
+		// 	for (j=0 ; j<10 ; j++){
+				camera_params.camTarget[0] += (camera_params.camTarget[0] - farPixel.hit.x) / (double)steps;
+				camera_params.camTarget[1] += (camera_params.camTarget[1] - farPixel.hit.y) / (double)steps;
+				camera_params.camTarget[2] += (camera_params.camTarget[2] - farPixel.hit.z) / (double)steps;
+		// 		printf("Turning, next lookAt = (%f,%f,%f)\n", camera_params.camTarget[0],camera_params.camTarget[1],camera_params.camTarget[2]);
+		// 		char fileName[80];
+		// 		init3D(&camera_params, &renderer_params);
+		// 		renderFractal(camera_params, renderer_params, image, mandelBox_params);
+		// 		sprintf(fileName, "./output/output_%05d.bmp", fileNumber);
+		// 		saveBMP(fileName, image, renderer_params.width, renderer_params.height);
+		// 		fileNumber++;
+		// 	}
+		// }
 		camera_params.camPos[0] -= (camera_params.camPos[0] - farPixel.hit.x) / (double)steps;						//primary axis alwaysmoves
 		camera_params.camPos[1] -= (camera_params.camPos[1] - farPixel.hit.y) / (double)steps;						//primary axis alwaysmoves
 		camera_params.camPos[2] -= (camera_params.camPos[2] - farPixel.hit.z) / (double)steps;						//primary axis alwaysmoves
 
 		printf("i=%d campos=(%f,%f,%f) lookAt=(%f,%f,%f) farPoint=(%f,%f,%f)", i, camera_params.camPos[0],camera_params.camPos[1],camera_params.camPos[2],camera_params.camTarget[0],camera_params.camTarget[1],camera_params.camTarget[2]);
 		char fileName[80];
-		sprintf(fileName, "./output/output_%05d.bmp", i);
+		sprintf(fileName, "./output/output_%05d.bmp", fileNumber);
 		saveBMP(fileName, image, renderer_params.width, renderer_params.height);
+		fileNumber++;
 		//printProgress( (double)i/7600, getTime()-time );
 	}
 
