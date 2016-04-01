@@ -28,7 +28,7 @@
 #include "getcolor.h"
 #include "raymarching.h"
 
-pixelData renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image, MandelBoxParams &mandelBox_params)
+void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image, MandelBoxParams &mandelBox_params, double *returnTotalNorm)
 {
   double eps = pow(10.0f, renderer_params.detail);
   double farPoint[3];
@@ -90,11 +90,4 @@ to[0:total], pix_data[0:total], color[0:total], from[0:total], result[0:3], in[0
 	  image[k]   = (unsigned char)(color[j*width+i].z * 255);
 	}
  }
-//Return values for navigation
-pixelData currentMax;
- for (i=0; i < total; i++) {
-   currentMax = (pix_data[i].distance > currentMax.distance) && !(pix_data[i].escaped) && (pix_data[i].distance < 10) ? pix_data[i] : currentMax;
- }
- //printf("\n\n%f %f %f\n\n", currentMax.hit.x,currentMax.hit.y,currentMax.hit.z);
- return currentMax;
 }

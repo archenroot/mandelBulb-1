@@ -8,11 +8,11 @@ LDFLAGS  = -lm
 PROGRAM_NAME=mandelbulb
 PROGRAM_VIDEO=video
 
-$(PROGRAM_NAME): main.o print.o timing.o savebmp.o getparams.o renderer.o init3D.o
+$(PROGRAM_NAME): mainBulb.o print.o timing.o savebmp.o getparams.o render.o init3D.o
 	$(CC) -o $@ $? $(CFLAGS) $(LDFLAGS)
 
 $(PROGRAM_VIDEO): video.o print.o timing.o savebmp.o getparams.o renderer.o init3D.o
 	$(CC) -o $@ $? $(CFLAGS) $(LDFLAGS)
 	
 clean:
-	rm *.o $(PROGRAM_NAME) $(EXEEXT) *~ image.bmp
+	rm *.o $(PROGRAM_NAME) $(PROGRAM_VIDEO) $(EXEEXT) *~ image.bmp

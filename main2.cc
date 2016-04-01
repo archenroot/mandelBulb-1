@@ -69,13 +69,13 @@ int main(int argc, char** argv)
 	}
 	printProgress( (double)i/spinning, getTime()-time );
 	
-	int zoomOut = 900; //30 Seconds to Zoom Out to coordinates of 10 all x, y, z, Total: 60
-	printf("\nRendering Small Zoom Out, 900 Frames\n"); 
+	int zoomOut = 300; //10 Seconds to Zoom Out to coordinates of 2 all x, y, z, Total: 40
+	printf("\nRendering Small Zoom Out, 300 Frames\n"); 
 	for (i=0; i<zoomOut; i++) {
 		//Zoom out to 5 5 5, we're at 1, 1, 1, this is somewhat of a nice effect
-		camera_params.camPos[0] = 0.707106781 + (((5-0.707106781)*i)/zoomOut);
-		camera_params.camPos[1] = 1 + ((4*i)/zoomOut);
-		camera_params.camPos[2] = 0.707106781 + (((5-0.707106781)*i)/zoomOut);
+		camera_params.camPos[0] = 0.707106781 + (2.0-0.707106781)*(i/zoomOut);
+		camera_params.camPos[1] = 1.0 + ((2.0-1.0)*(i/zoomOut);
+		camera_params.camPos[2] = 0.707106781 + (2.0-0.707106781)*(i/zoomOut);
 		
 		init3D(&camera_params, &renderer_params);
 		renderFractal(camera_params, renderer_params, image, mandelBox_params, total_pix_normal);
@@ -86,9 +86,8 @@ int main(int argc, char** argv)
 	}
 	printProgress( (double)i/zoomOut, getTime()-time );
 	
-	
 	//New Target: 0.622650 0.622650 0.622650
-	int reAngle = 150; // 5 Seconds to Re-Angle, Total: 65
+	int reAngle = 150; // 5 Seconds to Re-Angle, Total: 45
 	printf("\nRendering Directed Re - Angle, 150 Frames\n"); 
 	for (i=0; i<reAngle; i++) {
 	  //target 0.622650, 0.622650, 0.622650, Minor change, almost like a pause before diving
@@ -100,6 +99,10 @@ int main(int argc, char** argv)
 		camera_params.camUp[0] = (-0.408248/reAngle)*i;
 		camera_params.camUp[1] = 1-((1-0.816496/reAngle)*i); 
 		camera_params.camUp[2] = (-0.408248/reAngle)*i; 
+		
+		camera_params.camPos[0] = 2.0-(((2.0-1.5)/reAngle)*i);
+		camera_params.camPos[1] = 2.0-(((2.0-1.5)/reAngle)*i);
+		camera_params.camPos[2] = 2.0-(((2.0-1.5)/reAngle)*i);
 		init3D(&camera_params, &renderer_params);
 		renderFractal(camera_params, renderer_params, image, mandelBox_params, total_pix_normal);
 		char fileName[80];
@@ -109,13 +112,13 @@ int main(int argc, char** argv)
 	}
 	printProgress( (double)i/reAngle, getTime()-time );
 			
-	int Zoom = 900; // 30 seconds to zoom in again, Total: 95
+	int Zoom = 900; // 30 seconds to zoom in again, Total: 75
 	printf("\nRendering Zoom, 900 Frames\n"); 
 	for (i=0; i<Zoom; i++) {
 		//Move to 0.65 0.76 0.66, we are at 5 5 5, This is a dive
-		camera_params.camPos[0] = 5-(((5-0.65)/Zoom)*i);
-		camera_params.camPos[1] = 5-(((5-0.76)/Zoom)*i);
-		camera_params.camPos[2] = 5-(((5-0.66)/Zoom)*i);
+		camera_params.camPos[0] = 1.5-(((1.5-0.65)/Zoom)*i);
+		camera_params.camPos[1] = 1.5-(((1.5-0.76)/Zoom)*i);
+		camera_params.camPos[2] = 1.5-(((1.5-0.66)/Zoom)*i);
 		
 		//Focus on 0.4, 0.4, 0.4, readjust focus, we're at 0.622650, 0.622650, 0.622650
 		camera_params.camTarget[0] =0.622650- (((0.622650-0.4)/Zoom)*i);
@@ -132,7 +135,7 @@ int main(int argc, char** argv)
 	printProgress( (double)i/Zoom, getTime()-time );
 			
 	
-	int ReFocus = 150; // 5 Seconds to refocus, Total: 100
+	int ReFocus = 150; // 5 Seconds to refocus, Total: 80
 	printf("\nRendering ReFocus, 150 Frames\n"); 
 	for (i=0; i<ReFocus; i++) {
 		//Move to 0.60 0.76 0.66, we are at 0.65 0.76 0.66
@@ -150,8 +153,8 @@ int main(int argc, char** argv)
 	}
 	printProgress( (double)i/ReFocus, getTime()-time );
 	
-	int moveIn = 300; // 10 seconds to movein more, Total: 110
-	printf("\nRendering moveIn, 300 Frames\n"); 
+	int moveIn = 450; // 15 seconds to movein more, Total: 95
+	printf("\nRendering moveIn, 450 Frames\n"); 
 	for (i=0; i<moveIn; i++) {
 		//Move to 0.6 0.6 0.6, we are at 0.65 0.76 0.66, slightly bigger move
 		camera_params.camPos[1] = 0.76 - ((0.76-0.6)/moveIn)*i;
@@ -166,7 +169,7 @@ int main(int argc, char** argv)
 	}
 	printProgress( (double)i/moveIn, getTime()-time );
 	
-	int LookZero = 150; // 5 seconds to look at 0,0,0, Total: 115
+	int LookZero = 150; // 5 seconds to look at 0,0,0, Total: 100
 	printf("\nRendering look at zero, 150 Frames\n"); 
 	for (i=0; i<LookZero; i++) {
 		//look at 0 0 0 , we are at 0.54 0.54 0.54, slightly bigger move
@@ -183,7 +186,7 @@ int main(int argc, char** argv)
 	}
 	printProgress( (double)i/LookZero, getTime()-time );
 	
-	int MoveTowards = 900; // 30 Seconds to move closer in, Total: 145
+	int MoveTowards = 900; // 30 Seconds to move closer in, Total: 130
 	printf("\nRendering MoveTowards, 900 Frames\n"); 
 	for (i=0; i<MoveTowards; i++) {
 		//Move to 0.56 0.4 0.57, we are at 0.6 0.6 0.6
@@ -200,7 +203,7 @@ int main(int argc, char** argv)
 	}
 	printProgress( (double)i/MoveTowards, getTime()-time );	
 	
-	int LookOne = 150; // 5 seconds to look at 1,1,0, Total: 150
+	int LookOne = 150; // 5 seconds to look at 1,1,0, Total: 135
 	printf("\nRendering look at one, 150 Frames\n"); 
 	for (i=0; i<LookOne; i++) {
 		//look at 1 1 0 , we are at 0 0 0, 
@@ -217,12 +220,16 @@ int main(int argc, char** argv)
 	}
 	printProgress( (double)i/LookOne, getTime()-time );
 	
-	int Scale = 150; // 5 seconds to scale to 0, 4, 10 Total: 155
+	int Scale = 150; // 5 seconds to scale to 0, 4, 10 Total: 140
 	printf("\nRendering Scaling, 90 Frames\n"); 
 	for (i=0; i<Scale; i++) { //New Scale = 0, Rmin = 4, rFixed = 10;
 		mandelBox_params.scale = 2.0 - (2.0/Scale)*i;
 		mandelBox_params.rMin = 8.0 - ((8.0-4.0)/Scale)*i;
 		mandelBox_params.rFixed = 9 + ((10.0-9.0)/Scale)*i;
+		
+		camera_params.camPos[0] = 0.56-(((0.56 - 0.55)/Scale)*i);
+		camera_params.camPos[1] = 0.4-(((0.3 - 0.39)/Scale)*i);
+		camera_params.camPos[2] = 0.57-(((0.57 - 0.565)/Scale)*i);
 		
 		init3D(&camera_params, &renderer_params);
 		renderFractal(camera_params, renderer_params, image, mandelBox_params, total_pix_normal);
@@ -235,10 +242,10 @@ int main(int argc, char** argv)
 	
 	
 	//Jump to 0.31 -.8 0.3 
-	int JumpTo = 150; // 5 seconds to jump, Total: 160
-	printf("\nRendering Jump, 150 Frames\n"); 
+	int JumpTo = 3; // 1 seconds to jump, Total: 140
+	printf("\nRendering Jump, 30 Frames\n"); 
 	for (i=0; i<JumpTo; i++) {
-		//We are at 0.56 0.4 0.57, Jump to 0.31 -.8 0.3, will clip
+		//We are at 0.56 0.4 0.57, Jump to 0.31 -.8 0.3, will clip, but briefly
 		camera_params.camPos[0] = (0.56/JumpTo) * i;
 		camera_params.camPos[1] = (-0.8/JumpTo) * i;
 		camera_params.camPos[2] = (0.3/JumpTo) * i;
@@ -262,14 +269,13 @@ int main(int argc, char** argv)
 	printProgress( (double)i/JumpTo, getTime()-time );	
 	
 	
-	int First_Move = 750; // 25 seconds, moving to new Pos Total: 185
-	printf("\nRendering First_Move, 750 Frames\n"); 
+	int First_Move = 780; // 25 seconds, moving to new Pos Total: 165
+	printf("\nRendering First_Move, 780 Frames\n"); 
 	for (i=0; i<First_Move; i++) {
-		//Jump from 0.31 -.8 0.3, to 0.26 -.77 0.26 
-		camera_params.camPos[0] = 0.31 - ((0.31-0.26)/First_Move) * i;
-		camera_params.camPos[1] = -0.8 + ((0.8-0.77)/First_Move) * i;
-		camera_params.camPos[2] = 0.3 - ((0.3-0.26)/First_Move) * i;
-	
+		//Jump from 0.31 -.8 0.3, to 0.29 -.79 0.3 
+		camera_params.camPos[0] = 0.31 - ((0.31-0.29)/First_Move) * i;
+		camera_params.camPos[1] = -0.8 + ((0.8-0.79)/First_Move) * i;
+		camera_params.camPos[2] = 0.3 + ((0.4-0.3)/First_Move) * i;
 		init3D(&camera_params, &renderer_params);
 		renderFractal(camera_params, renderer_params, image, mandelBox_params, total_pix_normal);
 		char fileName[80];
@@ -279,13 +285,13 @@ int main(int argc, char** argv)
 	}
 	printProgress( (double)i/First_Move, getTime()-time );	
 	
-	int Second_Move = 750; // 25 seconds, moving to new Pos Total: 210
-	printf("\nRendering Second_Move, 750 Frames\n"); 
+	int Second_Move = 780; // 25 seconds, moving to new Pos Total: 190
+	printf("\nRendering Second_Move, 780 Frames\n"); 
 	for (i=0; i<Second_Move; i++) {
 		//Jump from 0.26 -.77 0.26 to 0.24 -.81 0.24 
-		camera_params.camPos[0] = 0.26 - ((0.26-0.24)/Second_Move) * i;
-		camera_params.camPos[1] = -0.77 - ((0.81-0.77)/Second_Move) * i;
-		camera_params.camPos[2] = 0.26 - ((0.26-0.24)/Second_Move) * i;
+		camera_params.camPos[0] = 0.29 - ((0.29-0.255)/Second_Move) * i;
+		camera_params.camPos[1] = -0.79 - ((0.08)/Second_Move) * i;
+		camera_params.camPos[2] = 0.4 - ((0.4-0.29)/Second_Move) * i;
 	
 		init3D(&camera_params, &renderer_params);
 		renderFractal(camera_params, renderer_params, image, mandelBox_params, total_pix_normal);
@@ -296,12 +302,19 @@ int main(int argc, char** argv)
 	}
 	printProgress( (double)i/Second_Move, getTime()-time );
 	
-	int Third_Move = 750; // 25 seconds, moving to new Pos Total: 235
-	printf("\nRendering Third_Move, 750 Frames\n"); 
+	int Third_Move = 780; // 25 seconds, moving to new Pos Total: 215
+	printf("\nRendering Third_Move, 780 Frames\n"); 
 	for (i=0; i<Third_Move; i++) {
 		//New Cam Target 0 0 -1
-		camera_params.camTarget[2] = ((-1)/Third_Move) * i;
-	
+		camera_params.camTarget[2] = 0-i*(1/Third_Move);
+		if ( i < 380){//Random Adjustment so no stop in video
+			camera_params.camTarget[0] = 0- i*(1/380);
+			camera_params.camTarget[1] = 0- i*(-1/380);
+		}else{//Re adjust
+			camera_params.camTarget[0] = -1 + 1*((i-380)/400);
+			camera_params.camTarget[1] = -1 + 1*((i-380)/400);
+		}
+		camera_params.camPos[2] = 0.29 - ((0.29-0.255)/Second_Move) * i;
 		init3D(&camera_params, &renderer_params);
 		renderFractal(camera_params, renderer_params, image, mandelBox_params, total_pix_normal);
 		char fileName[80];
@@ -312,13 +325,13 @@ int main(int argc, char** argv)
 	printProgress( (double)i/Third_Move, getTime()-time );		
 	
 	
-	int Fourth_Move = 750; // 25 seconds, moving to new Pos Total: 260
-	printf("\nRendering Fourth_Move, 750 Frames\n"); 
-	for (i=0; i<Third_Move; i++) {
+	int Fourth_Move = 780; // 25 seconds, moving to new Pos Total: 240
+	printf("\nRendering Fourth_Move, 780 Frames\n"); 
+	for (i=0; i<Fourth_Move; i++) {
 		//From 0.24 -.81 0.24 to 0.22 -0.77 0.22
-		camera_params.camPos[0] = 0.24 - ((0.24-0.22)/Fourth_Move) * i;
-		camera_params.camPos[1] = -0.81 + ((0.81-0.77)/Fourth_Move) * i;
-		camera_params.camPos[2] = 0.24 - ((0.24-0.22)/Fourth_Move) * i;
+		camera_params.camPos[0] = 0.255 - ((0.255-0.22)/Fourth_Move) * i;
+		camera_params.camPos[1] = -0.87 + ((0.87-0.77)/Fourth_Move) * i;
+		camera_params.camPos[2] = 0.255 - ((0.255-0.22)/Fourth_Move) * i;
 		
 		//New Cam Target 0 0 0
 		camera_params.camTarget[2] = -1 + ((1)/Third_Move) * i;
@@ -331,6 +344,25 @@ int main(int argc, char** argv)
 		printProgress( (double)i/Fourth_Move, getTime()-time );
 	}
 	printProgress( (double)i/Fourth_Move, getTime()-time );		
+	
+		int Last_Move = 300; // 10 sec final zoom out
+	printf("\nRendering Fourth_Move, 780 Frames\n"); 
+	for (i=0; i<Last_Move; i++) {
+		//From 0.24 -.81 0.24 to 0.22 -0.77 0.22
+		camera_params.camPos[0] = 0.22 + ((1-0.22)/Last_Move) * i;
+		camera_params.camPos[1] = -0.77 + ((1.77)/Last_Move) * i;
+		camera_params.camPos[2] = 0.22 + ((1-0.22)/Last_Move) * i;
+	
+		//New Cam Target 0 0 0
+	
+		init3D(&camera_params, &renderer_params);
+		renderFractal(camera_params, renderer_params, image, mandelBox_params, total_pix_normal);
+		char fileName[80];
+		sprintf(fileName, "./output/output_%05d.bmp", i + spinning + zoomOut + reAngle + Zoom + ReFocus + moveIn + LookZero + MoveTowards + LookOne + Scale + JumpTo + First_Move + Second_Move + Third_Move + Fourth_Move);
+		saveBMP(fileName, image, renderer_params.width, renderer_params.height);
+		printProgress( (double)i/Last_Move, getTime()-time );
+	}
+	printProgress( (double)i/Last_Move, getTime()-time );	
 	printf("\n\nAll frames rendered\n");
 	
 	//printf("\nReduced.x: %f, Reduced.y: %f, Reduced.z: %f\n", total_pix_normal[0], total_pix_normal[1], total_pix_normal[2]);
