@@ -1,6 +1,6 @@
 # CAMERA
 # location x,y,z (7,7,7)
- 1 1 1
+ 1.2 1.2 1.2
 # look at x,y,z
 0 0 0
 # up vector x,y,z; (0, 1, 0)
@@ -22,6 +22,6 @@
 # type 0 or 1
 1
 # brightness
-1.2
+1.0
 # IMAGE FILE NAME
 imageBulb.bmp

@@ -40,10 +40,12 @@ void RenderSpin(CameraParams &camera_params, RenderParams &renderer_params, Mand
 
 int main(int argc, char** argv){
 	int spin, total;
+	int status = system("mkdir output");
 	/*Input Parameters for Video
 	Video will be rendered at 30FPS, by default, it will first spin for 10 seconds, then automatically navigate
 	You may choose to override these defaults with Arguments 1 = Total frames, Argument2 = Spin frames
 	Note: Total AutoMove Frames = Total Frames - Spin Frames*/
+	
 	if(argc == 2){
 		total = atoi(argv[1]);
 		printf("\nTotal %d Auto Move Frames will be Rendered\n", total);
@@ -84,7 +86,8 @@ int main(int argc, char** argv){
 	printf("\n\nAll frames rendered\n");
 	/*Call Script to make Video*/
 	printf("\n\nMaking Video\n");
-	
+	status = system("bash ./makeVideo.sh");
+
 	/*Video Making Done*/
 	printf("\n\nCompleted Video\n");
 	return 0;
@@ -93,20 +96,20 @@ int main(int argc, char** argv){
 
 void autoMove(CameraParams &camera_params, RenderParams &renderer_params, MandelBoxParams &mandelBox_params, int start, int total){
 	int i;
-	pixelData farPixel; //Check Wall Hit
+	pixelData farPixel; //Check Farthest Point
 	int image_size = renderer_params.width * renderer_params.height;
 	unsigned char *image = (unsigned char*)malloc(3*image_size*sizeof(unsigned char));
 	double time = getTime();
 	double eps = 0.0000001;	//Stuck Bailout, Precausionary 
-	int steps = 400;				//Steps for camPos
-	int targetSteps = 40;		//Steps for camTarget
+	int steps = 500;				//Steps for camPos
+	int targetSteps = 30;		//Steps for camTarget
 	int fileNumber = start;
 	double lookX, lookY, lookZ;
 	
 	for (i=0; i<total; i++) {
 		init3D(&camera_params, &renderer_params);
 		farPixel = renderFractal(camera_params, renderer_params, image, mandelBox_params);
-		 if (i%10 == 0) {
+		 if (i%targetSteps == 0) {
 		 	lookX =  farPixel.hit.x;
 		 	lookY =  farPixel.hit.y;
 		 	lookZ =  farPixel.hit.z;	
@@ -132,8 +135,9 @@ void autoMove(CameraParams &camera_params, RenderParams &renderer_params, Mandel
 			camera_params.camTarget[1] = 0;
 			camera_params.camTarget[2] = 0;
 		}
-		printProgress( (double)i/7600, getTime()-time );
+		printProgress( (double)i/total, getTime()-time );
 	}
+	printProgress( (double)i/total, getTime()-time );
 	free(image);
 }
 void RenderSpin(CameraParams &camera_params, RenderParams &renderer_params, MandelBoxParams &mandelBox_params, int spinFrames){
@@ -160,5 +164,6 @@ void RenderSpin(CameraParams &camera_params, RenderParams &renderer_params, Mand
 		saveBMP(fileName, image, renderer_params.width, renderer_params.height);
 		printProgress( (double)i/spinFrames, getTime()-time );
 	}
+	printProgress( (double)i/spinFrames, getTime()-time );
 	printf("\n\nAll Spin Frames Rendered\n");
 }
