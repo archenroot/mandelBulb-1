@@ -95,6 +95,5 @@ pixelData currentMax;
  for (i=0; i < total; i++) {
    currentMax = (pix_data[i].distance > currentMax.distance) && !(pix_data[i].escaped) && (pix_data[i].distance < 10) ? pix_data[i] : currentMax;
  }
- //printf("\n\n%f %f %f\n\n", currentMax.hit.x,currentMax.hit.y,currentMax.hit.z);
  return currentMax;
 }
