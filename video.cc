@@ -33,133 +33,65 @@ pixelData renderFractal(const CameraParams &camera_params, const RenderParams &r
 void saveBMP      (const char* filename, const unsigned char* image, int width, int height);
 extern double getTime();
 extern void   printProgress( double perc, double time );
-void autoMove(CameraParams &camera_params, RenderParams &renderer_params, MandelBoxParams &mandelBox_params, int start, int total);
-void RenderSpin(CameraParams &camera_params, RenderParams &renderer_params, MandelBoxParams &mandelBox_params, int spinFrames);
-
-#define PI 3.14159265
+void autoMove(CameraParams &camera_params, RenderParams &renderer_params, MandelBoxParams &mandelBox_params, int primary, int secondary, double velocity, int start);
 
 int main(int argc, char** argv){
-	int spin, total;
-	/*Input Parameters for Video
-	Video will be rendered at 30FPS, by default, it will first spin for 10 seconds, then automatically navigate
-	You may choose to override these defaults with Arguments 1 = Total frames, Argument2 = Spin frames
-	Note: Total AutoMove Frames = Total Frames - Spin Frames*/
-	if(argc == 2){
-		total = atoi(argv[1]);
-		printf("\nTotal %d Frames will be Rendered\n", total);
-		spin = 300;
-		printf("Default Total %d Spin Frames will be Rendered\n", spin);
-	} else if (argc == 3) {
-		total = atoi(argv[1]);
-		spin = atoi(argv[2]);
-		printf("\nTotal %d Frames will be Rendered\n", total);
-		printf("\nTotal %d Spin Frames will be Rendered\n", total);
-	}else{
-		total = 8000;
-		spin = 300;
-		printf("Default Total %d Spin Frames will be Rendered\n", total);
-		printf("Default Total %d Total Frames will be Rendered\n", spin);
-	}
-
-	/*Init*/
 	CameraParams    camera_params;
 	RenderParams    renderer_params;
 	MandelBoxParams mandelBox_params;
 	getParameters("parm.dat", &camera_params, &renderer_params, &mandelBox_params);
-	
-	double thetaOffset = atan(camera_params.camPos[2]/camera_params.camPos[0]);
-	double startX, startZ;
-	startX = camera_params.camPos[0];
-	startZ = camera_params.camPos[2];
-	/*Render MandelBulb Spin for X seconds*/
-	RenderSpin(camera_params, renderer_params, mandelBox_params, spin);
-	
-	/*Update local camera_params*/
-	camera_params.camPos[0] = startX * cos(2*PI + thetaOffset);
-	camera_params.camPos[2] = startZ * sin(2*PI + thetaOffset);
-		
-	/*Render MandelBulb Moving from X until TotalFrames*/
-	autoMove(camera_params, renderer_params, mandelBox_params, spin, total);
-	
+
+
+	double Velocity = 0.0005; // 0.0001 Cartesian Movement Per Frame
+	//for (i=0; i<300; i++){}
+	int primary = 0;	//Primary is X
+	int secondary = 1;	//Secondary is Y
+	autoMove(camera_params, renderer_params, mandelBox_params, primary, secondary, Velocity, 0);
+
+
 	printf("\n\nAll frames rendered\n");
-	/*Call Script to make Video*/
+
 	printf("\n\nMaking Video\n");
-	
-	/*Video Making Done*/
-	printf("\n\nCompleted Video\n");
+
 	return 0;
 }
 
 
-void autoMove(CameraParams &camera_params, RenderParams &renderer_params, MandelBoxParams &mandelBox_params, int start, int total){
-	int i;
+void autoMove(CameraParams &camera_params, RenderParams &renderer_params, MandelBoxParams &mandelBox_params, int primary, int secondary, double velocity, int start){
+	int i, t, releaseCounter, release;
+	i = 0;
 	pixelData farPixel; //Check Wall Hit
 	int image_size = renderer_params.width * renderer_params.height;
 	unsigned char *image = (unsigned char*)malloc(3*image_size*sizeof(unsigned char));
 	double time = getTime();
-	double eps = 0.0000001;
-	int steps = 400;				//Steps for camPos
-	int targetSteps = 40;		//Steps for camTarget
-	int fileNumber = start;
-	double lookX, lookY, lookZ;
-	
-	for (i=0; i<total; i++) {
+	double condition = camera_params.camPos[primary];
+	int steps = 100;
+	int fileNumber = 0;
+	double lookx, looky, lookz;
+	for (i=0;i<7600;i++) {
 		init3D(&camera_params, &renderer_params);
 		farPixel = renderFractal(camera_params, renderer_params, image, mandelBox_params);
+		int j = 0;
 		 if (i%10 == 0) {
-		 	lookX =  farPixel.hit.x;
-		 	lookY =  farPixel.hit.y;
-		 	lookZ =  farPixel.hit.z;	
-		 }
+			lookx = farPixel.hit.x;
+			looky = farPixel.hit.y;
+			lookz = farPixel.hit.z;
+		}
+		camera_params.camTarget[0] -= (camera_params.camTarget[0] - lookx) / (double)10;
+		camera_params.camTarget[1] -= (camera_params.camTarget[1] - looky) / (double)10;
+		camera_params.camTarget[2] -= (camera_params.camTarget[2] - lookz) / (double)10;
 
-		camera_params.camTarget[0] += (camera_params.camTarget[0] - lookX) / (double)targetSteps;
-		camera_params.camTarget[1] += (camera_params.camTarget[1] - lookY) / (double)targetSteps;
-		camera_params.camTarget[2] += (camera_params.camTarget[2] - lookZ) / (double)targetSteps;
+		camera_params.camPos[0] -= (camera_params.camPos[0] - farPixel.hit.x) / (double)steps;						//primary axis alwaysmoves
+		camera_params.camPos[1] -= (camera_params.camPos[1] - farPixel.hit.y) / (double)steps;						//primary axis alwaysmoves
+		camera_params.camPos[2] -= (camera_params.camPos[2] - farPixel.hit.z) / (double)steps;						//primary axis alwaysmoves
 
-		camera_params.camPos[0] -= (camera_params.camPos[0] - farPixel.hit.x) / (double)steps;						//Chasing farthest pixel
-		camera_params.camPos[1] -= (camera_params.camPos[1] - farPixel.hit.y) / (double)steps;						
-		camera_params.camPos[2] -= (camera_params.camPos[2] - farPixel.hit.z) / (double)steps;						
-
-		printf("Current Frame=%d campos=(%f,%f,%f) lookAt=(%f,%f,%f) farPoint=(%f,%f,%f)", i, camera_params.camPos[0],camera_params.camPos[1],camera_params.camPos[2],camera_params.camTarget[0],camera_params.camTarget[1],camera_params.camTarget[2]);
+		printf("i=%d campos=(%f,%f,%f) lookAt=(%f,%f,%f)\n", i, camera_params.camPos[0],camera_params.camPos[1],camera_params.camPos[2],camera_params.camTarget[0],camera_params.camTarget[1],camera_params.camTarget[2]);
 		char fileName[80];
 		sprintf(fileName, "./output/output_%05d.bmp", fileNumber);
 		saveBMP(fileName, image, renderer_params.width, renderer_params.height);
+		printf("Saved image: %d\n",i);
 		fileNumber++;
-		if (abs(camera_params.camPos[0]) < eps && abs(camera_params.camPos[1]) < eps && abs(camera_params.camPos[2]) < eps){	//Camera Kickedout if we hit 0,0,0
-			camera_params.camPos[0] = -1;
-			camera_params.camPos[1] = -1;					
-			camera_params.camPos[2] = -1;
-			camera_params.camTarget[0] = 0;
-			camera_params.camTarget[1] = 0;
-			camera_params.camTarget[2] = 0;
-		}
 		//printProgress( (double)i/7600, getTime()-time );
 	}
 	free(image);
-}
-void RenderSpin(CameraParams &camera_params, RenderParams &renderer_params, MandelBoxParams &mandelBox_params, int spinFrames){
-	int i;
-	double startX, startZ;
-	double thetaOffset = atan(camera_params.camPos[2]/camera_params.camPos[0]);
-	int image_size = renderer_params.width * renderer_params.height;
-	unsigned char *image = (unsigned char*)malloc(3*image_size*sizeof(unsigned char));
-	startX = camera_params.camPos[0];
-	startZ = camera_params.camPos[2];
-	double radPerFrame = (2*PI)/spinFrames;//Make a full Circle
-	double time = getTime();
-	printf("\n\nRendering %d frames of spinning\n", spinFrames);
-	for (i=0; i<spinFrames; i++) {
-		//Circle of Spin
-		camera_params.camPos[0] = startX * cos(radPerFrame * i + thetaOffset);
-		camera_params.camPos[2] = startZ * sin(radPerFrame * i + thetaOffset);
-		init3D(&camera_params, &renderer_params);
-
-		renderFractal(camera_params, renderer_params, image, mandelBox_params);
-
-		char fileName[80];
-		sprintf(fileName, "./output/output_%05d.bmp", i);
-		saveBMP(fileName, image, renderer_params.width, renderer_params.height);
-		printProgress( (double)i/spinFrames, getTime()-time );
-	}
-	printf("\n\nAll Spin Frames Rendered\n");
 }
