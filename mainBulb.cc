@@ -35,7 +35,6 @@ extern void   printProgress( double perc, double time );
 
 int main(int argc, char** argv)
 {
-	int i;
 	CameraParams    camera_params;
 	RenderParams    renderer_params;
 	MandelBoxParams mandelBox_params;
@@ -53,7 +52,6 @@ int main(int argc, char** argv)
 	char fileName[80];
 	sprintf(fileName, renderer_params.file_name);
 	saveBMP(fileName, image, renderer_params.width, renderer_params.height);
-
 	printProgress( 1.0 , getTime()-time );
 	printf("\nMandel Bulb Rendered\n");
 

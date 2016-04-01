@@ -31,30 +31,24 @@
 void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image, MandelBoxParams &mandelBox_params, double *returnTotalNorm)
 {
   double eps = pow(10.0f, renderer_params.detail);
-  double farPoint[3];
 
   int height = renderer_params.height;
   int width  = renderer_params.width;
   int total = width*height;
   int i,j,k;
 
-  vec3 to[total];
-  vec3 from[total];
-  vec3 color[total];
-  double in[4], out[4];
-	double result[3];
-  pixelData pix_data[total];
-  double dist;
-  double tx = 0;
-  double ty = 0;
-  double tz = 0;
-  int hit = 0;
-#pragma acc data copy(image[:width*height*3], farPoint[0:3], camera_params[0:1], renderer_params[0:1], mandelBox_params[0:1], \
-to[0:total], pix_data[0:total], color[0:total], from[0:total], result[0:3], in[0:4], out[0:4])
+  vec3 *to = (vec3*)malloc(sizeof(vec3)*width*height);
+  vec3 *from = (vec3*)malloc(sizeof(vec3)*width*height);
+  vec3 *color = (vec3*)malloc(sizeof(vec3)*width*height);
+  pixelData *pix_data = (pixelData*)malloc(sizeof(pixelData)*width*height);
+
+  double in[4], out[4], result[3], farPoint[3];
+  
+#pragma acc data copy(image[:width*height*3], farPoint[:3], camera_params[:1], renderer_params[:1], mandelBox_params[:1], \
+to[0:total], pix_data[:total], color[:total], from[:total], result[:3], in[:4], out[:4])
 #pragma acc parallel loop private(result[0:3], in[0:4], out[0:4], farPoint[0:3])
  for(j = 0; j < height; j++){
   #pragma acc loop independent worker
-  //reduction (+:tx) reduction(+:ty) reduction(+:tz)
 	for(i = 0; i <width; i++){
 		/*This is a physical inline of UnProject
 		Problem: ACC did not allow certain values passed
@@ -76,18 +70,24 @@ to[0:total], pix_data[0:total], color[0:total], from[0:total], result[0:3], in[0
 		farPoint[2] = out[2]*out[3];
 		/*End physical inline
 		*/
-
+		//find where to go
 	  SUBTRACT_POINT( to[j*width+i], farPoint,camera_params.camPos);
 	  NORMALIZE( to[j*width+i] );
 
 	  rayMarch(renderer_params, from[j*width+i], to[j*width+i], eps, pix_data[j*width+i], mandelBox_params);
-
+		
+		//Removed return value
 	  getColour(pix_data[j*width+i], renderer_params, from[j*width+i], to[j*width+i], result);
     VEC(color[j*width+i], result[0], result[1], result[2]);
+	  //Colouring
 	  k = (j * width + i)*3;
 	  image[k+2] = (unsigned char)(color[j*width+i].x * 255);
 	  image[k+1] = (unsigned char)(color[j*width+i].y * 255);
 	  image[k]   = (unsigned char)(color[j*width+i].z * 255);
 	}
  }
+ free(to);
+ free(color);
+ free(pix_data);
+ free(from);
 }
