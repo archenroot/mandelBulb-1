@@ -71,6 +71,7 @@ int main(int argc, char** argv){
 	
 	double thetaOffset = atan(camera_params.camPos[2]/camera_params.camPos[0]);
 	double startX, startZ;
+
 	startX = camera_params.camPos[0];
 	startZ = camera_params.camPos[2];
 	/*Render MandelBulb Spin for X seconds*/
@@ -79,7 +80,7 @@ int main(int argc, char** argv){
 	/*Update local camera_params*/
 	camera_params.camPos[0] = startX * cos(2*PI + thetaOffset);
 	camera_params.camPos[2] = startZ * sin(2*PI + thetaOffset);
-		
+
 	/*Render MandelBulb Moving from X until TotalFrames*/
 	autoMove(camera_params, renderer_params, mandelBox_params, spin, total);
 	
@@ -101,12 +102,12 @@ void autoMove(CameraParams &camera_params, RenderParams &renderer_params, Mandel
 	unsigned char *image = (unsigned char*)malloc(3*image_size*sizeof(unsigned char));
 	double time = getTime();
 	double eps = 0.0000001;	//Stuck Bailout, Precausionary 
-	int steps = 500;				//Steps for camPos
-	int targetSteps = 30;		//Steps for camTarget
+	int steps = 1000;				//Steps for camPos
+	int targetSteps = 100;		//Steps for camTarget
 	int fileNumber = start;
 	double lookX, lookY, lookZ;
 	
-	for (i=0; i<total; i++) {
+	for (i=0; i<total; i++) {				
 		init3D(&camera_params, &renderer_params);
 		farPixel = renderFractal(camera_params, renderer_params, image, mandelBox_params);
 		 if (i%targetSteps == 0) {
@@ -126,6 +127,9 @@ void autoMove(CameraParams &camera_params, RenderParams &renderer_params, Mandel
 		char fileName[80];
 		sprintf(fileName, "./output/output_%05d.bmp", fileNumber);
 		saveBMP(fileName, image, renderer_params.width, renderer_params.height);
+		//Convert to the smaller JPG format, then remove bmp
+		system("mogrify -format jpg ./output/*.bmp");
+		system("rm ./output/*.bmp");
 		fileNumber++;
 		if (abs(camera_params.camPos[0]) < eps && abs(camera_params.camPos[1]) < eps && abs(camera_params.camPos[2]) < eps){	//Camera Kickedout if we hit 0,0,0
 			camera_params.camPos[0] = -1;
@@ -152,9 +156,10 @@ void RenderSpin(CameraParams &camera_params, RenderParams &renderer_params, Mand
 	double time = getTime();
 	printf("\n\nRendering %d frames of spinning\n", spinFrames);
 	for (i=0; i<spinFrames; i++) {
-		//Circle of Spin
+		//Spinning trig functions
 		camera_params.camPos[0] = startX * cos(radPerFrame * i + thetaOffset);
 		camera_params.camPos[2] = startZ * sin(radPerFrame * i + thetaOffset);
+		//Render the Image
 		init3D(&camera_params, &renderer_params);
 
 		renderFractal(camera_params, renderer_params, image, mandelBox_params);
@@ -162,6 +167,9 @@ void RenderSpin(CameraParams &camera_params, RenderParams &renderer_params, Mand
 		char fileName[80];
 		sprintf(fileName, "./output/output_%05d.bmp", i);
 		saveBMP(fileName, image, renderer_params.width, renderer_params.height);
+		//Convert to the smaller JPG format, then remove bmp
+		system("mogrify -format jpg ./output/*.bmp");
+		system("rm ./output/*.bmp");
 		printProgress( (double)i/spinFrames, getTime()-time );
 	}
 	printProgress( (double)i/spinFrames, getTime()-time );

@@ -19,18 +19,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <stdio.h>
-#include "color.h"
-#include "mandelbox.h"
+#include "colorFloat.h"
+#include "mandelboxFloat.h"
 #include "camera.h"
-#include "vec3d.h"
+#include "vec3dFloat.h"
 #include "3d2.h"
-#include "distance_est.h"
-#include "getcolor.h"
-#include "raymarching.h"
+#include "distance_estFloat.h"
+#include "getcolorFloat.h"
+#include "raymarchingFloat.h"
 
-pixelData renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image, MandelBoxParams &mandelBox_params)
+void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image, MandelBoxParams &mandelBox_params, double *returnTotalNorm)
 {
-  double eps = pow(10.0f, renderer_params.detail);
+  float eps = pow(10.0f, renderer_params.detail);
 
   int height = renderer_params.height;
   int width  = renderer_params.width;
@@ -42,7 +42,7 @@ pixelData renderFractal(const CameraParams &camera_params, const RenderParams &r
   vec3 *color = (vec3*)malloc(sizeof(vec3)*width*height);
   pixelData *pix_data = (pixelData*)malloc(sizeof(pixelData)*width*height);
 
-  double in[4], out[4], result[3], farPoint[3];
+  float in[4], out[4], result[3], farPoint[3];
 #pragma acc data copy(image[:width*height*3], farPoint[0:3], camera_params[0:1], renderer_params[0:1], mandelBox_params[0:1], \
 to[0:total], pix_data[0:total], color[0:total], from[0:total], result[0:3], in[0:4], out[0:4])
 #pragma acc parallel loop private(result[0:3], in[0:4], out[0:4], farPoint[0:3])
@@ -53,8 +53,8 @@ to[0:total], pix_data[0:total], color[0:total], from[0:total], result[0:3], in[0
 		Problem: ACC did not allow certain values passed
 		*/
 	  SET_POINT(from[j*width+i],camera_params.camPos);
-		in[0]=(i-(double)(camera_params.viewport[0]))/(double)(camera_params.viewport[2])*2.0-1.0;
-		in[1]=(j-(double)(camera_params.viewport[1]))/(double)(camera_params.viewport[3])*2.0-1.0;
+		in[0]=(i-(float)(camera_params.viewport[0]))/(float)(camera_params.viewport[2])*2.0-1.0;
+		in[1]=(j-(float)(camera_params.viewport[1]))/(float)(camera_params.viewport[3])*2.0-1.0;
 		in[2]=2.0-1.0;
 		in[3]=1.0;
 
@@ -83,10 +83,4 @@ to[0:total], pix_data[0:total], color[0:total], from[0:total], result[0:3], in[0
 	  image[k]   = (unsigned char)(color[j*width+i].z * 255);
 	}
  }
-//Return values for navigation
-pixelData currentMax;
- for (i=0; i < total; i++) {
-   currentMax = (pix_data[i].distance > currentMax.distance) && !(pix_data[i].escaped) && (pix_data[i].distance < 10) ? pix_data[i] : currentMax;
- }
- return currentMax;
 }
