@@ -28,7 +28,7 @@
 #include "getcolor.h"
 #include "raymarching.h"
 
-pixelData renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image, MandelBoxParams &mandelBox_params)
+void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image, MandelBoxParams &mandelBox_params, double *returnTotalNorm)
 {
   double eps = pow(10.0f, renderer_params.detail);
 
@@ -37,6 +37,7 @@ pixelData renderFractal(const CameraParams &camera_params, const RenderParams &r
   int total = width*height;
   int i,j,k;
 
+	//Allocation of loop instanced variables
   vec3 *to = (vec3*)malloc(sizeof(vec3)*width*height);
   vec3 *from = (vec3*)malloc(sizeof(vec3)*width*height);
   vec3 *color = (vec3*)malloc(sizeof(vec3)*width*height);
@@ -72,9 +73,10 @@ to[0:total], pix_data[0:total], color[0:total], from[0:total], result[0:3], in[0
 
 	  SUBTRACT_POINT( to[j*width+i], farPoint,camera_params.camPos);
 	  NORMALIZE( to[j*width+i] );
-
+	  
+		//raymarchin to get distance
 	  rayMarch(renderer_params, from[j*width+i], to[j*width+i], eps, pix_data[j*width+i], mandelBox_params);
-
+		//get color based on distance
 	  getColour(pix_data[j*width+i], renderer_params, from[j*width+i], to[j*width+i], result);
     VEC(color[j*width+i], result[0], result[1], result[2]);
 	  k = (j * width + i)*3;
@@ -83,10 +85,8 @@ to[0:total], pix_data[0:total], color[0:total], from[0:total], result[0:3], in[0
 	  image[k]   = (unsigned char)(color[j*width+i].z * 255);
 	}
  }
-//Return values for navigation
-pixelData currentMax;
- for (i=0; i < total; i++) {
-   currentMax = (pix_data[i].distance > currentMax.distance) && !(pix_data[i].escaped) && (pix_data[i].distance < 10) ? pix_data[i] : currentMax;
- }
- return currentMax;
+ free(to);
+ free(from);
+ free(color);
+ free(pix_data);
 }

@@ -28,7 +28,7 @@
 #include "getcolor.h"
 #include "raymarching.h"
 
-void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image, MandelBoxParams &mandelBox_params, double *returnTotalNorm)
+pixelData renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image, MandelBoxParams &mandelBox_params)
 {
   double eps = pow(10.0f, renderer_params.detail);
 
@@ -36,13 +36,13 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
   int width  = renderer_params.width;
   int total = width*height;
   int i,j,k;
-
-  vec3 *to = (vec3*)malloc(sizeof(vec3)*width*height);
-  vec3 *from = (vec3*)malloc(sizeof(vec3)*width*height);
-  vec3 *color = (vec3*)malloc(sizeof(vec3)*width*height);
-  pixelData *pix_data = (pixelData*)malloc(sizeof(pixelData)*width*height);
-
+  
+  //Static Allocations necesary for returning 
+  vec3 to[total], from[total], color[total];
+  pixelData pix_data[total];
+	//Unproject Parameters
   double in[4], out[4], result[3], farPoint[3];
+  
 #pragma acc data copy(image[:width*height*3], farPoint[0:3], camera_params[0:1], renderer_params[0:1], mandelBox_params[0:1], \
 to[0:total], pix_data[0:total], color[0:total], from[0:total], result[0:3], in[0:4], out[0:4])
 #pragma acc parallel loop private(result[0:3], in[0:4], out[0:4], farPoint[0:3])
@@ -72,10 +72,12 @@ to[0:total], pix_data[0:total], color[0:total], from[0:total], result[0:3], in[0
 
 	  SUBTRACT_POINT( to[j*width+i], farPoint,camera_params.camPos);
 	  NORMALIZE( to[j*width+i] );
-
+		//Allocation of loop instanced variables
 	  rayMarch(renderer_params, from[j*width+i], to[j*width+i], eps, pix_data[j*width+i], mandelBox_params);
-
+	  
+		//get color based on distance
 	  getColour(pix_data[j*width+i], renderer_params, from[j*width+i], to[j*width+i], result);
+		//Reetting color since getColor has been altered
     VEC(color[j*width+i], result[0], result[1], result[2]);
 	  k = (j * width + i)*3;
 	  image[k+2] = (unsigned char)(color[j*width+i].x * 255);
@@ -83,4 +85,10 @@ to[0:total], pix_data[0:total], color[0:total], from[0:total], result[0:3], in[0
 	  image[k]   = (unsigned char)(color[j*width+i].z * 255);
 	}
  }
+//Return values for navigation
+pixelData currentMax;
+ for (i=0; i < total; i++) {
+   currentMax = (pix_data[i].distance > currentMax.distance) && !(pix_data[i].escaped) && (pix_data[i].distance < 10) ? pix_data[i] : currentMax;
+ }
+ return currentMax;
 }

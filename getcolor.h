@@ -28,15 +28,16 @@
 
 inline void getColour(const pixelData &pixData, const RenderParams &render_params, const vec3 &from, const vec3  &direction, double *result){
 	vec3 backColor, hitColor;
-  VEC(backColor, 0.125, 0125, 0.125);
-  VEC(hitColor, 1.0, 1.0, 1.0);
+  VEC(backColor, 0.0, 0.0 , 0.0);
+  VEC(hitColor, 0.0, 1.0, 1.0);
   double CamLightW = 1.8;// 1.27536;
 	double CamLightMin = 0.3;// 0.48193;
 
   if (pixData.escaped == false){
-      //apply lighting
+      //apply lighting, comment out for no lighting effects
       //lighting(pixData.normal, hitColor, pixData.hit, direction, hitColor);
-
+      
+      //Redefinition of nn from class to struct
 			vec3 nn;
 			VEC(nn, (pixData.normal.x - 1.0), (pixData.normal.y - 1.0), (pixData.normal.z - 1.0));
 			double dotResult = (nn.x*direction.x) + (nn.y*direction.y) + (nn.z*direction.z);

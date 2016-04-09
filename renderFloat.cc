@@ -28,6 +28,7 @@
 #include "getcolorFloat.h"
 #include "raymarchingFloat.h"
 
+//This function has been modified to work with floating point operations
 void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image, MandelBoxParams &mandelBox_params, double *returnTotalNorm)
 {
   float eps = pow(10.0f, renderer_params.detail);
@@ -83,4 +84,8 @@ to[0:total], pix_data[0:total], color[0:total], from[0:total], result[0:3], in[0
 	  image[k]   = (unsigned char)(color[j*width+i].z * 255);
 	}
  }
+ free(to);
+ free(from);
+ free(color);
+ free(pix_data);
 }

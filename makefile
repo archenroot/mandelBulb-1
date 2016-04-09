@@ -9,13 +9,13 @@ PROGRAM_NAME=mandelbulb
 PROGRAM_FLOAT=floatbulb
 PROGRAM_VIDEO=video
 
-$(PROGRAM_NAME): mainBulb.o print.o timing.o savebmp.o getparams.o render.o init3D.o
+$(PROGRAM_NAME): mainBulb.o print.o timing.o savebmp.o getparams.o renderer.o init3D.o
 	$(CC) -o $@ $? $(CFLAGS) $(LDFLAGS)
 
 $(PROGRAM_FLOAT): mainFloatBulb.o print.o timing.o savebmp.o getparams.o renderFloat.o init3D.o
 	$(CC) -o $@ $? $(CFLAGS) $(LDFLAGS)
 	
-$(PROGRAM_VIDEO): video.o print.o timing.o savebmp.o getparams.o renderer.o init3D.o
+$(PROGRAM_VIDEO): mainVideo.o print.o timing.o savebmp.o getparams.o rendererVideo.o init3D.o
 	$(CC) -o $@ $? $(CFLAGS) $(LDFLAGS)
 	
 clean:

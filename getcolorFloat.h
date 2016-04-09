@@ -26,6 +26,7 @@
 #include "vec3dFloat.h"
 #include <cmath>
 
+//This file has been adjusted for floating point operations
 inline void getColour(const pixelData &pixData, const RenderParams &render_params, const vec3 &from, const vec3  &direction, float *result){
 	vec3 backColor, hitColor;
   VEC(backColor, 0.125, 0.125, 0.125);

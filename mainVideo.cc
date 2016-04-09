@@ -40,12 +40,13 @@ void RenderSpin(CameraParams &camera_params, RenderParams &renderer_params, Mand
 
 int main(int argc, char** argv){
 	int spin, total;
+	//mkdirectory for image sotrage
 	int status = system("mkdir output");
+
 	/*Input Parameters for Video
 	Video will be rendered at 30FPS, by default, it will first spin for 10 seconds, then automatically navigate
 	You may choose to override these defaults with Arguments 1 = Total frames, Argument2 = Spin frames
 	Note: Total AutoMove Frames = Total Frames - Spin Frames*/
-	
 	if(argc == 2){
 		total = atoi(argv[1]);
 		printf("\nTotal %d Auto Move Frames will be Rendered\n", total);
@@ -55,7 +56,7 @@ int main(int argc, char** argv){
 		total = atoi(argv[1]);
 		spin = atoi(argv[2]);
 		printf("\nTotal %d Auto Move Frames will be Rendered\n", total);
-		printf("\nTotal %d Spin Frames will be Rendered\n", total);
+		printf("\nTotal %d Spin Frames will be Rendered\n", spin);
 	}else{
 		total = 7200;
 		spin = 300;
@@ -67,8 +68,8 @@ int main(int argc, char** argv){
 	CameraParams    camera_params;
 	RenderParams    renderer_params;
 	MandelBoxParams mandelBox_params;
-	getParameters("parm.dat", &camera_params, &renderer_params, &mandelBox_params);
-	
+	getParameters("staticVideoParams.dat", &camera_params, &renderer_params, &mandelBox_params);
+
 	double thetaOffset = atan(camera_params.camPos[2]/camera_params.camPos[0]);
 	double startX, startZ;
 
@@ -76,14 +77,14 @@ int main(int argc, char** argv){
 	startZ = camera_params.camPos[2];
 	/*Render MandelBulb Spin for X seconds*/
 	RenderSpin(camera_params, renderer_params, mandelBox_params, spin);
-	
+
 	/*Update local camera_params*/
 	camera_params.camPos[0] = startX * cos(2*PI + thetaOffset);
 	camera_params.camPos[2] = startZ * sin(2*PI + thetaOffset);
 
 	/*Render MandelBulb Moving from X until TotalFrames*/
 	autoMove(camera_params, renderer_params, mandelBox_params, spin, total);
-	
+
 	printf("\n\nAll frames rendered\n");
 	/*Call Script to make Video*/
 	printf("\n\nMaking Video\n");
@@ -101,39 +102,46 @@ void autoMove(CameraParams &camera_params, RenderParams &renderer_params, Mandel
 	int image_size = renderer_params.width * renderer_params.height;
 	unsigned char *image = (unsigned char*)malloc(3*image_size*sizeof(unsigned char));
 	double time = getTime();
-	double eps = 0.0000001;	//Stuck Bailout, Precausionary 
-	int steps = 1000;				//Steps for camPos
+	double eps = 0.0000001;	//Stuck Bailout, Precausionary
+	int steps = 500;				//Steps for camPos
 	int targetSteps = 100;		//Steps for camTarget
+	int targetFrequency = 100;//Camera Target Adjustment Frequency
 	int fileNumber = start;
 	double lookX, lookY, lookZ;
-	
-	for (i=0; i<total; i++) {				
+
+	for (i=0; i<total; i++) {
 		init3D(&camera_params, &renderer_params);
 		farPixel = renderFractal(camera_params, renderer_params, image, mandelBox_params);
-		 if (i%targetSteps == 0) {
+		 if (i%targetFrequency == 0) {
 		 	lookX =  farPixel.hit.x;
 		 	lookY =  farPixel.hit.y;
-		 	lookZ =  farPixel.hit.z;	
-		 }
+		 	lookZ =  farPixel.hit.z;
+	
+		}
 
 		camera_params.camTarget[0] -= (camera_params.camTarget[0] - lookX) / (double)targetSteps;
 		camera_params.camTarget[1] -= (camera_params.camTarget[1] - lookY) / (double)targetSteps;
 		camera_params.camTarget[2] -= (camera_params.camTarget[2] - lookZ) / (double)targetSteps;
 
 		camera_params.camPos[0] -= (camera_params.camPos[0] - farPixel.hit.x) / (double)steps;						//Chasing farthest pixel
-		camera_params.camPos[1] -= (camera_params.camPos[1] - farPixel.hit.y) / (double)steps;						
-		camera_params.camPos[2] -= (camera_params.camPos[2] - farPixel.hit.z) / (double)steps;						
+		camera_params.camPos[1] -= (camera_params.camPos[1] - farPixel.hit.y) / (double)steps;
+		camera_params.camPos[2] -= (camera_params.camPos[2] - farPixel.hit.z) / (double)steps;
 
-		char fileName[80];
-		sprintf(fileName, "./output/output_%05d.bmp", fileNumber);
+		char fileName[80], command[80];
+		//Serially save files for ffmpeg
+		sprintf(fileName, "./output/output_%06d.bmp", fileNumber);
 		saveBMP(fileName, image, renderer_params.width, renderer_params.height);
 		//Convert to the smaller JPG format, then remove bmp
-		system("mogrify -format jpg ./output/*.bmp");
-		system("rm ./output/*.bmp");
+		sprintf(command, "convert ./output/output_%06d.bmp ./output/output_%06d.jpg",fileNumber, fileNumber);
+		system(command);
+		sprintf(command, "rm ./output/output_%06d.bmp &", fileNumber);
+		system(command);
+
 		fileNumber++;
-		if (abs(camera_params.camPos[0]) < eps && abs(camera_params.camPos[1]) < eps && abs(camera_params.camPos[2]) < eps){	//Camera Kickedout if we hit 0,0,0
+		//Camera Kickedout if we hit 0,0,0 (this does not occur unless evolving)
+		if (abs(camera_params.camPos[0]) < eps && abs(camera_params.camPos[1]) < eps && abs(camera_params.camPos[2]) < eps){	
 			camera_params.camPos[0] = -1;
-			camera_params.camPos[1] = -1;					
+			camera_params.camPos[1] = -1;
 			camera_params.camPos[2] = -1;
 			camera_params.camTarget[0] = 0;
 			camera_params.camTarget[1] = 0;
@@ -141,7 +149,6 @@ void autoMove(CameraParams &camera_params, RenderParams &renderer_params, Mandel
 		}
 		printProgress( (double)i/total, getTime()-time );
 	}
-	printProgress( (double)i/total, getTime()-time );
 	free(image);
 }
 void RenderSpin(CameraParams &camera_params, RenderParams &renderer_params, MandelBoxParams &mandelBox_params, int spinFrames){
@@ -164,14 +171,22 @@ void RenderSpin(CameraParams &camera_params, RenderParams &renderer_params, Mand
 
 		renderFractal(camera_params, renderer_params, image, mandelBox_params);
 
-		char fileName[80];
-		sprintf(fileName, "./output/output_%05d.bmp", i);
+		char fileName[80], command[80];
+		//serially save files for ffmpeg
+		sprintf(fileName, "./output/output_%06d.bmp", i);
 		saveBMP(fileName, image, renderer_params.width, renderer_params.height);
 		//Convert to the smaller JPG format, then remove bmp
-		system("mogrify -format jpg ./output/*.bmp");
-		system("rm ./output/*.bmp");
+		sprintf(command, "convert ./output/output_%06d.bmp ./output/output_%06d.jpg",i , i);
+		system(command);
+		sprintf(command, "rm ./output/output_%06d.bmp &", i);
+		system(command);
+
 		printProgress( (double)i/spinFrames, getTime()-time );
 	}
-	printProgress( (double)i/spinFrames, getTime()-time );
+	//Use to remove residual files
+	system("mogrify -format jpg ./output/*.bmp");
+	system("rm ./output/*.bmp");
+	//Done
 	printf("\n\nAll Spin Frames Rendered\n");
+	free(image);
 }

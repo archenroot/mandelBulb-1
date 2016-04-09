@@ -7,7 +7,7 @@
 #include <math.h>
 #endif
 
-
+//Floating point operations, this is most apparent in computing time reductions
 typedef struct 
 {
   float x, y, z;
