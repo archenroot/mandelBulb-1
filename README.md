@@ -1,5 +1,9 @@
 # mandelBulb
 
+## Examples
+
+https://www.youtube.com/playlist?list=PLRFQmKYHfcY6R818z1YN479A80TLlmJwl
+
 Create 3D mandelbulb fractal videos with one executable.  The camera will automatically explore around the bulb for the number
 of frames specified.
 
